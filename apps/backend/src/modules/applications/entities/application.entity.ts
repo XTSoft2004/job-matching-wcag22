@@ -73,6 +73,9 @@ export class Application extends EntityBase {
     enum: ApplicationStatus,
     default: ApplicationStatus.SUBMITTED,
   })
+  /**
+   * Trạng thái hoạt động hoặc trạng thái xử lý.
+   */
   status: ApplicationStatus;
 
   /**
@@ -89,6 +92,9 @@ export class Application extends EntityBase {
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
+  /**
+   * Thời gian nộp đơn ứng tuyển.
+   */
   submittedAt: Date;
 
   /**

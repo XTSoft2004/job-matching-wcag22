@@ -1,0 +1,26 @@
+[
+  {
+    "email": "admin@jobmatching.com",
+    "fullName": "Hệ thống Admin",
+    "phone": "0909000000",
+    "role": "Quản trị viên",
+    "password": "Admin123@",
+    "status": "Hoạt động"
+  },
+  {
+    "email": "employer@jobmatching.com",
+    "fullName": "Nhà tuyển dụng mẫu",
+    "phone": "0909111222",
+    "role": "Nhà tuyển dụng",
+    "password": "Employer123@",
+    "status": "Hoạt động"
+  },
+  {
+    "email": "candidate@jobmatching.com",
+    "fullName": "Ứng viên mẫu",
+    "phone": "0988111222",
+    "role": "Ứng viên",
+    "password": "Candidate123@",
+    "status": "Hoạt động"
+  }
+]

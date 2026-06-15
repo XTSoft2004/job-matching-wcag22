@@ -36,6 +36,9 @@ export class VerificationCode extends EntityBase {
     enum: VerificationCodeType,
     nullable: false,
   })
+  /**
+   * Loại mã xác thực hoặc phân loại đối tượng.
+   */
   type: VerificationCodeType;
 
   /**

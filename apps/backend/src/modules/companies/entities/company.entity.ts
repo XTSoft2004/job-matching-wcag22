@@ -47,6 +47,9 @@ export class Company extends EntityBase {
     length: 100,
     nullable: true,
   })
+  /**
+   * Quy mô nhân sự của công ty.
+   */
   companySize?: string | null;
 
   /**

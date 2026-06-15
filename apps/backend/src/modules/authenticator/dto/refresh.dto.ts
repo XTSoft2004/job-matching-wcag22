@@ -6,6 +6,9 @@ export class RefreshDto {
     description: 'Mã refresh token của phiên đăng nhập',
     example: 'eyJhbGciOiJIUzI1NiIsIn...',
   })
+  /**
+   * Token làm mới phiên đăng nhập.
+   */
   @IsString({ message: 'Refresh token phải là chuỗi' })
   @IsNotEmpty({ message: 'Refresh token không được để trống' })
   refreshToken: string;
@@ -14,6 +17,9 @@ export class RefreshDto {
     description: 'Mã định danh thiết bị thực hiện refresh',
     example: 'chrome-windows',
   })
+  /**
+   * Mã định danh thiết bị đăng nhập.
+   */
   @IsString({ message: 'Mã định danh thiết bị phải là chuỗi' })
   @IsNotEmpty({ message: 'Mã định danh thiết bị không được để trống' })
   deviceId: string;

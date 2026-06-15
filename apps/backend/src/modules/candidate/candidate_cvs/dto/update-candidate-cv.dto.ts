@@ -6,6 +6,9 @@ export class UpdateCandidateCvDto {
     description: 'ID hồ sơ ứng viên liên kết',
     example: 1,
   })
+  /**
+   * ID hồ sơ ứng viên.
+   */
   @IsNumber({}, { message: 'ID hồ sơ phải là số' })
   @IsOptional()
   profileId?: number;
@@ -14,6 +17,9 @@ export class UpdateCandidateCvDto {
     description: 'Đường dẫn file CV',
     example: 'https://example.com/cvs/my-cv-updated.pdf',
   })
+  /**
+   * Đường dẫn URL tải tệp CV.
+   */
   @IsString({ message: 'Đường dẫn CV phải là chuỗi' })
   @IsOptional()
   cvUrl?: string;
@@ -22,6 +28,9 @@ export class UpdateCandidateCvDto {
     description: 'Mô tả/Ghi chú cho bản CV',
     example: 'CV tiếng Anh cập nhật',
   })
+  /**
+   * Mô tả chi tiết công việc hoặc nội dung.
+   */
   @IsString({ message: 'Mô tả phải là chuỗi' })
   @IsOptional()
   description?: string;

@@ -7,6 +7,9 @@ export class UpdateApplicationDto {
     description: 'ID hồ sơ ứng viên nộp đơn',
     example: 1,
   })
+  /**
+   * ID hồ sơ ứng viên.
+   */
   @IsNumber({}, { message: 'ID hồ sơ phải là số' })
   @IsOptional()
   profileId?: number;
@@ -15,6 +18,9 @@ export class UpdateApplicationDto {
     description: 'ID tệp CV ứng tuyển',
     example: 1,
   })
+  /**
+   * ID tệp CV ứng viên.
+   */
   @IsNumber({}, { message: 'ID CV phải là số' })
   @IsOptional()
   candidateCvId?: number;
@@ -23,6 +29,9 @@ export class UpdateApplicationDto {
     description: 'Thư giới thiệu của ứng viên gửi tới nhà tuyển dụng',
     example: 'Kính chào nhà tuyển dụng...',
   })
+  /**
+   * Thư giới thiệu của ứng viên gửi tới nhà tuyển dụng.
+   */
   @IsString({ message: 'Thư giới thiệu phải là chuỗi' })
   @IsOptional()
   coverLetter?: string;
@@ -32,6 +41,9 @@ export class UpdateApplicationDto {
     enum: ApplicationStatus,
     example: ApplicationStatus.REVIEWING,
   })
+  /**
+   * Trạng thái hoạt động hoặc trạng thái xử lý.
+   */
   @IsEnum(ApplicationStatus, { message: 'Trạng thái không hợp lệ' })
   @IsOptional()
   status?: ApplicationStatus;
@@ -40,6 +52,9 @@ export class UpdateApplicationDto {
     description: 'Ghi chú nội bộ của nhà tuyển dụng',
     example: 'Ứng viên có kỹ năng tốt, hẹn lịch phỏng vấn.',
   })
+  /**
+   * Ghi chú nội bộ của nhà tuyển dụng.
+   */
   @IsString({ message: 'Ghi chú phải là chuỗi' })
   @IsOptional()
   employerNote?: string;

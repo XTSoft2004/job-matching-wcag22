@@ -36,6 +36,9 @@ export class User extends EntityBase {
     unique: true,
     nullable: false,
   })
+  /**
+   * Địa chỉ email.
+   */
   email: string;
 
   /**
@@ -47,6 +50,9 @@ export class User extends EntityBase {
     length: 255,
     nullable: false,
   })
+  /**
+   * Mật khẩu đã mã hóa.
+   */
   passwordHash: string;
 
   /**
@@ -76,6 +82,9 @@ export class User extends EntityBase {
     enum: UserRole,
     default: UserRole.CANDIDATE,
   })
+  /**
+   * Vai trò người dùng trong hệ thống (Ứng viên, Nhà tuyển dụng, Admin).
+   */
   role: UserRole;
 
   /**
@@ -87,6 +96,9 @@ export class User extends EntityBase {
     enum: UserStatus,
     default: UserStatus.ACTIVE,
   })
+  /**
+   * Trạng thái hoạt động hoặc trạng thái xử lý.
+   */
   status: UserStatus;
 
   /**
@@ -109,6 +121,9 @@ export class User extends EntityBase {
     onDelete: 'SET NULL',
     nullable: true,
   })
+  /**
+   * Thông tin công ty liên kết.
+   */
   @JoinColumn({ name: 'company_id' })
   company?: Company | null;
 

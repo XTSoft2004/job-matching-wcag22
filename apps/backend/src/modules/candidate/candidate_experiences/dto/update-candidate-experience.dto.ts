@@ -6,6 +6,9 @@ export class UpdateCandidateExperienceDto {
     description: 'ID hồ sơ ứng viên liên kết',
     example: 1,
   })
+  /**
+   * ID hồ sơ ứng viên.
+   */
   @IsNumber({}, { message: 'ID hồ sơ phải là số' })
   @IsOptional()
   profileId?: number;
@@ -14,6 +17,9 @@ export class UpdateCandidateExperienceDto {
     description: 'Tên công ty ứng viên từng làm việc',
     example: 'Công ty Công nghệ XYZ',
   })
+  /**
+   * Tên công ty hoặc tổ chức làm việc.
+   */
   @IsString({ message: 'Tên công ty phải là chuỗi' })
   @IsOptional()
   companyName?: string;
@@ -22,6 +28,9 @@ export class UpdateCandidateExperienceDto {
     description: 'Vị trí đảm nhiệm',
     example: 'NodeJS Developer',
   })
+  /**
+   * Vị trí công tác hoặc chức danh công việc.
+   */
   @IsString({ message: 'Vị trí làm việc phải là chuỗi' })
   @IsOptional()
   position?: string;
@@ -30,6 +39,9 @@ export class UpdateCandidateExperienceDto {
     description: 'Ngày bắt đầu làm việc',
     example: '2023-01-01',
   })
+  /**
+   * Thời điểm bắt đầu.
+   */
   @IsDateString({}, { message: 'Ngày bắt đầu không đúng định dạng YYYY-MM-DD' })
   @IsOptional()
   startDate?: string;
@@ -42,6 +54,9 @@ export class UpdateCandidateExperienceDto {
     {},
     { message: 'Ngày kết thúc không đúng định dạng YYYY-MM-DD' },
   )
+  /**
+   * Thời điểm kết thúc.
+   */
   @IsOptional()
   endDate?: string;
 
@@ -49,6 +64,9 @@ export class UpdateCandidateExperienceDto {
     description: 'Mô tả chi tiết công việc',
     example: 'Xây dựng REST APIs, tối ưu DB...',
   })
+  /**
+   * Mô tả chi tiết công việc hoặc nội dung.
+   */
   @IsString({ message: 'Mô tả phải là chuỗi' })
   @IsOptional()
   description?: string;

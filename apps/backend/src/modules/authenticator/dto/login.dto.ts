@@ -8,6 +8,9 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class LoginDto {
+  /**
+   * Email đăng nhập
+   */
   @ApiProperty({ description: 'Email đăng nhập', example: 'user@example.com' })
   @IsEmail({}, { message: 'Email không đúng định dạng' })
   @IsNotEmpty({ message: 'Email không được để trống' })
@@ -18,6 +21,9 @@ export class LoginDto {
     example: 'password123',
     minLength: 6,
   })
+  /**
+   * Mật khẩu đăng nhập.
+   */
   @IsString({ message: 'Mật khẩu phải là chuỗi' })
   @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
   @MinLength(6, { message: 'Mật khẩu phải chứa ít nhất 6 ký tự' })
@@ -27,6 +33,9 @@ export class LoginDto {
     description: 'Mã định danh thiết bị',
     example: 'chrome-windows',
   })
+  /**
+   * Mã định danh thiết bị đăng nhập.
+   */
   @IsString({ message: 'Mã định danh thiết bị phải là chuỗi' })
   @IsOptional()
   deviceId?: string;

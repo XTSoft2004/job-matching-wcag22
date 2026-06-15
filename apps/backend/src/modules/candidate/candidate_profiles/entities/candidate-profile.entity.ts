@@ -71,6 +71,9 @@ export class CandidateProfile extends EntityBase {
     length: 50,
     nullable: true,
   })
+  /**
+   * Cấp bậc kinh nghiệm yêu cầu.
+   */
   experienceLevel?: string | null;
 
   /**
@@ -83,6 +86,9 @@ export class CandidateProfile extends EntityBase {
     scale: 2,
     nullable: true,
   })
+  /**
+   * Expected Salary Min.
+   */
   expectedSalaryMin?: number | null;
 
   /**
@@ -95,6 +101,9 @@ export class CandidateProfile extends EntityBase {
     scale: 2,
     nullable: true,
   })
+  /**
+   * Expected Salary Max.
+   */
   expectedSalaryMax?: number | null;
 
   /**

@@ -7,6 +7,9 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateCandidateCvDto {
+  /**
+   * ID hồ sơ ứng viên liên kết
+   */
   @ApiProperty({ description: 'ID hồ sơ ứng viên liên kết', example: 1 })
   @IsNumber({}, { message: 'ID hồ sơ phải là số' })
   @IsNotEmpty({ message: 'ID hồ sơ không được để trống' })
@@ -16,6 +19,9 @@ export class CreateCandidateCvDto {
     description: 'Đường dẫn file CV',
     example: 'https://example.com/cvs/my-cv.pdf',
   })
+  /**
+   * Đường dẫn URL tải tệp CV.
+   */
   @IsString({ message: 'Đường dẫn CV phải là chuỗi' })
   @IsNotEmpty({ message: 'Đường dẫn CV không được để trống' })
   cvUrl: string;
@@ -24,6 +30,9 @@ export class CreateCandidateCvDto {
     description: 'Mô tả/Ghi chú cho bản CV',
     example: 'CV tiếng Anh cho vị trí NodeJS',
   })
+  /**
+   * Mô tả chi tiết công việc hoặc nội dung.
+   */
   @IsString({ message: 'Mô tả phải là chuỗi' })
   @IsOptional()
   description?: string;

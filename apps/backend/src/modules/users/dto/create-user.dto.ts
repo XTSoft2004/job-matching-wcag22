@@ -14,6 +14,9 @@ export class CreateUserDto {
     description: 'Email của người dùng',
     example: 'user@example.com',
   })
+  /**
+   * Địa chỉ email.
+   */
   @IsEmail({}, { message: 'Email không đúng định dạng' })
   @IsNotEmpty({ message: 'Email không được để trống' })
   email: string;
@@ -23,11 +26,17 @@ export class CreateUserDto {
     example: 'password123',
     minLength: 6,
   })
+  /**
+   * Mật khẩu đăng nhập.
+   */
   @IsString({ message: 'Mật khẩu phải là chuỗi' })
   @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
   @MinLength(6, { message: 'Mật khẩu phải chứa ít nhất 6 ký tự' })
   password: string;
 
+  /**
+   * Họ và tên đầy đủ
+   */
   @ApiProperty({ description: 'Họ và tên đầy đủ', example: 'Nguyễn Văn A' })
   @IsString({ message: 'Họ và tên phải là chuỗi' })
   @IsNotEmpty({ message: 'Họ và tên không được để trống' })
@@ -37,6 +46,9 @@ export class CreateUserDto {
     description: 'Số điện thoại liên hệ',
     example: '0912345678',
   })
+  /**
+   * Số điện thoại liên hệ.
+   */
   @IsString({ message: 'Số điện thoại phải là chuỗi' })
   @IsOptional()
   phone?: string;
@@ -46,6 +58,9 @@ export class CreateUserDto {
     enum: UserRole,
     default: UserRole.CANDIDATE,
   })
+  /**
+   * Vai trò người dùng trong hệ thống (Ứng viên, Nhà tuyển dụng, Admin).
+   */
   @IsEnum(UserRole, { message: 'Vai trò không hợp lệ' })
   @IsOptional()
   role?: UserRole;
@@ -55,6 +70,9 @@ export class CreateUserDto {
     enum: UserStatus,
     default: UserStatus.ACTIVE,
   })
+  /**
+   * Trạng thái hoạt động hoặc trạng thái xử lý.
+   */
   @IsEnum(UserStatus, { message: 'Trạng thái không hợp lệ' })
   @IsOptional()
   status?: UserStatus;

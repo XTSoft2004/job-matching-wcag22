@@ -14,6 +14,9 @@ export class CandidateCv extends EntityBase {
   @ManyToOne(() => CandidateProfile, (profile) => profile.cvs, {
     onDelete: 'CASCADE',
   })
+  /**
+   * Thông tin chi tiết hồ sơ ứng viên.
+   */
   @JoinColumn({ name: 'profile_id' })
   profile: CandidateProfile;
 

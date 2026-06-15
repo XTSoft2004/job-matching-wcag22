@@ -32,6 +32,9 @@ export class UserToken extends EntityBase {
     length: 1500,
     nullable: false,
   })
+  /**
+   * Token làm mới phiên đăng nhập.
+   */
   refreshToken: string;
 
   /**

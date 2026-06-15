@@ -2,16 +2,25 @@ import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateApplicationDto {
+  /**
+   * ID tin tuyển dụng muốn ứng tuyển
+   */
   @ApiProperty({ description: 'ID tin tuyển dụng muốn ứng tuyển', example: 1 })
   @IsNumber({}, { message: 'ID tin tuyển dụng phải là số' })
   @IsNotEmpty({ message: 'ID tin tuyển dụng không được để trống' })
   jobId: number;
 
+  /**
+   * ID hồ sơ ứng viên nộp đơn
+   */
   @ApiProperty({ description: 'ID hồ sơ ứng viên nộp đơn', example: 1 })
   @IsNumber({}, { message: 'ID hồ sơ phải là số' })
   @IsNotEmpty({ message: 'ID hồ sơ không được để trống' })
   profileId: number;
 
+  /**
+   * ID tệp CV của ứng viên dùng để ứng tuyển
+   */
   @ApiProperty({ description: 'ID tệp CV của ứng viên dùng để ứng tuyển', example: 1 })
   @IsNumber({}, { message: 'ID CV phải là số' })
   @IsNotEmpty({ message: 'ID CV không được để trống' })
@@ -21,6 +30,9 @@ export class CreateApplicationDto {
     description: 'Thư giới thiệu của ứng viên gửi tới nhà tuyển dụng',
     example: 'Kính chào nhà tuyển dụng, tôi muốn ứng tuyển vào vị trí này vì...',
   })
+  /**
+   * Thư giới thiệu của ứng viên gửi tới nhà tuyển dụng.
+   */
   @IsString({ message: 'Thư giới thiệu phải là chuỗi' })
   @IsOptional()
   coverLetter?: string;
