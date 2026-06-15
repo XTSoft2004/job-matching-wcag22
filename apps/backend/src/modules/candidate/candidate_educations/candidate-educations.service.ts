@@ -124,7 +124,7 @@ export class CandidateEducationsService extends BaseService {
     if (!edu) {
       throw new NotFoundException('Không tìm thấy thông tin học vấn này');
     }
-    await this.candidateEducationRepository.softRemove(edu);
+    await this.candidateEducationRepository.remove(edu);
     return ResponseHttp.success({
       message: 'Xóa thông tin học vấn thành công',
     });

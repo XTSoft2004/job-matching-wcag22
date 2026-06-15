@@ -34,10 +34,4 @@ export class CandidateCv extends EntityBase {
    */
   @Column({ type: 'text', nullable: true })
   description?: string | null;
-
-  /**
-   * Đánh dấu đây có phải là CV chính dùng để ứng tuyển mặc định hay không.
-   */
-  @Column({ name: 'is_main', type: 'boolean', default: false })
-  isMain: boolean;
 }

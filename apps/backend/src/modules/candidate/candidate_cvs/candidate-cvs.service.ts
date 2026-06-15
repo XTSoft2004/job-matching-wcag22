@@ -47,21 +47,6 @@ export class CandidateCvsService extends BaseService {
     cv.cvUrl = dto.cvUrl;
     cv.description = dto.description;
 
-    // Automatically set isMain to true if it is the first CV, or if user explicitly wants it to be main
-    if (existingCvsCount === 0) {
-      cv.isMain = true;
-    } else {
-      cv.isMain = dto.isMain ?? false;
-    }
-
-    if (cv.isMain) {
-      // Set all other CVs of this profile to not main
-      await this.candidateCvRepository.update(
-        { profileId: dto.profileId },
-        { isMain: false },
-      );
-    }
-
     this.setAuditForCreate(cv);
     await this.candidateCvRepository.save(cv);
     return ResponseHttp.success({
@@ -72,7 +57,7 @@ export class CandidateCvsService extends BaseService {
   async findByProfileId(profileId: number): Promise<ResponseHttp<CandidateCvResponse[]>> {
     const cvs = await this.candidateCvRepository.find({
       where: { profileId },
-      order: { isMain: 'DESC', createdAt: 'DESC' },
+      order: { createdAt: 'DESC' },
     });
     return ResponseHttp.success({
       message: 'Lấy danh sách CV thành công',
@@ -111,19 +96,6 @@ export class CandidateCvsService extends BaseService {
     if (dto.cvUrl !== undefined) cv.cvUrl = dto.cvUrl;
     if (dto.description !== undefined) cv.description = dto.description;
 
-    if (dto.isMain !== undefined) {
-      const wasMain = cv.isMain;
-      cv.isMain = dto.isMain;
-
-      if (cv.isMain && !wasMain) {
-        // Set all other CVs of this profile to not main
-        await this.candidateCvRepository.update(
-          { profileId: cv.profileId },
-          { isMain: false },
-        );
-      }
-    }
-
     this.setAuditForUpdate(cv);
     await this.candidateCvRepository.save(cv);
     return ResponseHttp.success({
@@ -137,22 +109,7 @@ export class CandidateCvsService extends BaseService {
       throw new NotFoundException('Không tìm thấy thông tin CV này');
     }
 
-    const wasMain = cv.isMain;
-    const profileId = cv.profileId;
-
     await this.candidateCvRepository.softRemove(cv);
-
-    // If the deleted CV was the main one, set the most recent remaining CV as main
-    if (wasMain) {
-      const remainingCv = await this.candidateCvRepository.findOne({
-        where: { profileId },
-        order: { createdAt: 'DESC' },
-      });
-      if (remainingCv) {
-        remainingCv.isMain = true;
-        await this.candidateCvRepository.save(remainingCv);
-      }
-    }
 
     return ResponseHttp.success({
       message: 'Xóa CV thành công',

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsNumber } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateCandidateCvDto {
@@ -25,12 +25,4 @@ export class UpdateCandidateCvDto {
   @IsString({ message: 'Mô tả phải là chuỗi' })
   @IsOptional()
   description?: string;
-
-  @ApiPropertyOptional({
-    description: 'Đánh dấu đây là CV chính dùng để ứng tuyển',
-    example: true,
-  })
-  @IsBoolean({ message: 'isMain phải là kiểu boolean' })
-  @IsOptional()
-  isMain?: boolean;
 }

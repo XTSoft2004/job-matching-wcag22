@@ -22,6 +22,7 @@ import { CandidateCvsModule } from './modules/candidate/candidate_cvs/candidate-
 import { CompaniesModule } from './modules/companies/companies.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { JobSkillsModule } from './modules/job_skills/job-skills.module';
+import { ApplicationsModule } from './modules/applications/applications.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { JobSkillsModule } from './modules/job_skills/job-skills.module';
     CompaniesModule,
     JobsModule,
     JobSkillsModule,
+    ApplicationsModule,
   ],
   controllers: [AppController],
   providers: [

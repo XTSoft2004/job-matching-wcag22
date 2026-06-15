@@ -124,7 +124,7 @@ export class CandidateExperiencesService extends BaseService {
     if (!exp) {
       throw new NotFoundException('Không tìm thấy thông tin kinh nghiệm này');
     }
-    await this.candidateExperienceRepository.softRemove(exp);
+    await this.candidateExperienceRepository.remove(exp);
     return ResponseHttp.success({
       message: 'Xóa kinh nghiệm làm việc thành công',
     });

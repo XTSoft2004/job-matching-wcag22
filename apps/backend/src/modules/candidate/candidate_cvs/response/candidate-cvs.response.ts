@@ -13,7 +13,4 @@ export class CandidateCvResponse extends BaseResponse {
 
   @Expose()
   description?: string | null;
-
-  @Expose()
-  isMain: boolean;
 }

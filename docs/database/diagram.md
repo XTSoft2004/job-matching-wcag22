@@ -145,7 +145,6 @@ erDiagram
         int profile_id FK "ID hồ sơ ứng viên"
         varchar cv_url "Đường dẫn file CV"
         text description "Mô tả/Ghi chú bản CV"
-        boolean is_main "Là CV chính"
         timestamp created_at "Ngày tạo"
         timestamp updated_at "Ngày cập nhật"
     }
@@ -202,12 +201,10 @@ erDiagram
     applications {
         int id PK "ID đơn ứng tuyển"
         int job_id FK "ID tin tuyển dụng"
-        int candidate_id FK "ID ứng viên (users)"
+        int profile_id FK "ID hồ sơ ứng viên (candidate_profiles)"
         text cover_letter "Thư giới thiệu"
         
-        %% CV tại thời điểm nộp (snapshot)
-        varchar submitted_cv_url "Link CV đính kèm"
-        varchar submitted_cv_name "Tên CV đính kèm"
+        int candidate_cv_id FK "ID file CV ứng viên (candidate_cvs)"
         
         enum status "submitted | reviewing | shortlisted | hired | rejected"
         text employer_note "Ghi chú của NTD"
@@ -264,7 +261,8 @@ erDiagram
     candidate_profiles ||--o{ candidate_cvs : "có danh sách CV"
     
     jobs ||--o{ applications : "nhận đơn ứng tuyển"
-    users ||--o{ applications : "nộp đơn ứng tuyển"
+    candidate_profiles ||--o{ applications : "nộp đơn ứng tuyển"
+    candidate_cvs ||--o{ applications : "được dùng ứng tuyển"
     
     users ||--o{ saved_jobs : "lưu tin"
     jobs ||--o{ saved_jobs : "được lưu bởi"
@@ -406,7 +404,6 @@ erDiagram
 | **`profile_id`** | INT (FK) | Liên kết đến hồ sơ ứng viên `candidate_profiles.id` |
 | `cv_url` | VARCHAR | Đường dẫn file CV trên hệ thống lưu trữ |
 | `description` | TEXT | Ghi chú/Mô tả về bản CV (Ví dụ: "CV Node.js", "CV Tiếng Anh") |
-| `is_main` | BOOLEAN | Đánh dấu CV chính dùng để ứng tuyển |
 | `created_at` | TIMESTAMP | Ngày tạo |
 | `updated_at` | TIMESTAMP | Ngày cập nhật gần nhất |
 
@@ -450,16 +447,15 @@ erDiagram
 ---
 
 ### 5. 📨 `applications` — Đơn ứng tuyển
-> Lưu trữ thông tin ứng tuyển của ứng viên vào tin tuyển dụng. Để tránh trường hợp ứng viên cập nhật file CV chính trong hồ sơ làm ảnh hưởng tới tệp CV cũ đã nộp cho nhà tuyển dụng xem, bảng này lưu trực tiếp link CV tại thời điểm nộp đơn (submitted CV snapshot).
+> Lưu trữ thông tin ứng tuyển của ứng viên vào tin tuyển dụng, liên kết trực tiếp với tệp CV của ứng viên tại thời điểm nộp đơn.
 
 | Trường | Kiểu | Mô tả |
 | :--- | :--- | :--- |
 | `id` | INT (PK) | ID tự tăng |
 | `job_id` | INT (FK) | Tin tuyển dụng ứng tuyển (Liên kết `jobs.id`) |
-| `candidate_id` | INT (FK) | Ứng viên nộp đơn (Liên kết `users.id`) |
+| `profile_id` | INT (FK) | Hồ sơ ứng viên nộp đơn (Liên kết `candidate_profiles.id`) |
 | `cover_letter` | TEXT | Thư giới thiệu của ứng viên |
-| **`submitted_cv_url`**| VARCHAR | Đường dẫn CV đính kèm tại thời điểm nộp đơn |
-| **`submitted_cv_name`**| VARCHAR | Tên tệp CV đính kèm tại thời điểm nộp đơn |
+| **`candidate_cv_id`**| INT (FK) | Liên kết đến CV của ứng viên được nộp kèm (Liên kết `candidate_cvs.id`) |
 | `status` | ENUM | Trạng thái đơn: `submitted`, `reviewing`, `shortlisted`, `hired`, `rejected` |
 | `employer_note` | TEXT | Ghi chú nội bộ của nhà tuyển dụng |
 | `submitted_at` | TIMESTAMP | Ngày giờ nộp đơn |
