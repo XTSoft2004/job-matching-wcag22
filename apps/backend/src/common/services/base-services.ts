@@ -1,14 +1,10 @@
-import { Inject, Injectable, Scope } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { JWTInfoResponse } from '@/modules/authenticator/tokens/response/jwt-info.response';
 import { EntityBase } from '@/common/entity/base.entity';
 import { Repository } from 'typeorm';
 
-@Injectable({ scope: Scope.REQUEST })
 export class BaseService {
   constructor(
-    @Inject(REQUEST)
     protected readonly request: Request & { user?: JWTInfoResponse },
   ) {}
 

@@ -31,50 +31,38 @@ export class MailService {
   }
 
   /**
-   * Send verification email containing account activation link
+   * Send verification email containing OTP code
    */
   async sendVerificationCode(email: string, token: string): Promise<void> {
     const subject = 'Xác minh tài khoản của bạn - JobMatching';
-    const apiPrefix =
-      this.configService.get<string>('app.apiPrefix') || 'api/v1';
-    const port = this.configService.get<number>('app.port') || 3000;
-    const actionUrl = `http://localhost:${port}/${apiPrefix}/auth/verify-account?token=${token}`;
-
-    const html = this.getLinkTemplate(
+    const html = this.getOtpTemplate(
       email,
-      actionUrl,
       'Xác minh tài khoản của bạn',
-      'Cảm ơn bạn đã đăng ký tài khoản tại JobMatching. Vui lòng nhấn vào nút dưới đây để kích hoạt tài khoản và hoàn tất quá trình xác minh.',
-      'Kích hoạt tài khoản',
+      'Cảm ơn bạn đã đăng ký tài khoản tại JobMatching. Vui lòng sử dụng mã xác nhận bên dưới để hoàn tất xác minh tài khoản.',
+      token,
     );
-    await this.sendMail(email, subject, html, actionUrl);
+    await this.sendMail(email, subject, html, token);
   }
 
   /**
-   * Send password reset email containing password recovery link
+   * Send password reset email containing OTP code
    */
   async sendForgotPasswordCode(email: string, token: string): Promise<void> {
     const subject = 'Khôi phục mật khẩu tài khoản của bạn - JobMatching';
-    const apiPrefix =
-      this.configService.get<string>('app.apiPrefix') || 'api/v1';
-    const port = this.configService.get<number>('app.port') || 3000;
-    const actionUrl = `http://localhost:${port}/${apiPrefix}/auth/reset-password-page?token=${token}`;
-
-    const html = this.getLinkTemplate(
+    const html = this.getOtpTemplate(
       email,
-      actionUrl,
-      'Khôi phục mật khẩu của bạn',
-      'Chúng tôi nhận được yêu cầu khôi phục mật khẩu cho tài khoản của bạn. Nhấn vào nút dưới đây để chuyển đến trang đặt lại mật khẩu mới.',
-      'Đặt lại mật khẩu',
+      'Khôi phục mật khẩu',
+      'Chúng tôi nhận được yêu cầu khôi phục mật khẩu cho tài khoản của bạn. Vui lòng sử dụng mã xác nhận bên dưới để đặt lại mật khẩu mới.',
+      token,
     );
-    await this.sendMail(email, subject, html, actionUrl);
+    await this.sendMail(email, subject, html, token);
   }
 
   private async sendMail(
     to: string,
     subject: string,
     html: string,
-    actionUrl: string,
+    code: string,
   ): Promise<void> {
     const from = this.configService.get<string>('mail.from');
 
@@ -84,7 +72,7 @@ export class MailService {
 [MOCK EMAIL SENT]
 To: ${to}
 Subject: ${subject}
-Action Link: ${actionUrl}
+OTP Code: ${code}
 ============================================================
       `);
       return;
@@ -104,16 +92,15 @@ Action Link: ${actionUrl}
         error.stack,
       );
       // Fallback to console print so developers don't get blocked
-      this.logger.warn(`FALLBACK Action Link for ${to}: ${actionUrl}`);
+      this.logger.warn(`FALLBACK OTP Code for ${to}: ${code}`);
     }
   }
 
-  private getLinkTemplate(
+  private getOtpTemplate(
     email: string,
-    actionUrl: string,
     title: string,
     description: string,
-    buttonText: string,
+    code: string,
   ): string {
     return `
 <!DOCTYPE html>
@@ -167,48 +154,34 @@ Action Link: ${actionUrl}
       color: #475569;
       margin-bottom: 25px;
     }
-    .btn-container {
+    .otp-container {
       text-align: center;
       margin: 30px 0;
-    }
-    .action-btn {
-      display: inline-block;
-      background: linear-gradient(135deg, #6366f1, #3b82f6);
-      color: #ffffff !important;
-      text-decoration: none;
-      padding: 14px 30px;
+      padding: 24px;
+      background-color: #f8fafc;
       border-radius: 12px;
+      border: 1px dashed #cbd5e1;
+    }
+    .otp-label {
+      font-size: 12px;
       font-weight: 600;
-      font-size: 16px;
-      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+      color: #64748b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .otp-code {
+      font-size: 36px;
+      font-weight: 800;
+      color: #4f46e5;
+      letter-spacing: 6px;
+      margin: 10px 0;
     }
     .expiration-notice {
       font-size: 13px;
       color: #ef4444;
-      text-align: center;
-      margin-top: 15px;
       font-weight: 500;
-    }
-    .raw-link-container {
-      margin-top: 25px;
-      padding: 15px;
-      background-color: #f8fafc;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-    }
-    .raw-link-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: #64748b;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .raw-link {
-      color: #4f46e5;
-      word-break: break-all;
-      font-size: 12px;
-      text-decoration: none;
+      margin-top: 5px;
     }
     .footer {
       background-color: #f8fafc;
@@ -247,14 +220,10 @@ Action Link: ${actionUrl}
         <p class="welcome-text">Xin chào <strong>${email}</strong>,</p>
         <p class="welcome-text">${description}</p>
         
-        <div class="btn-container">
-          <a href="${actionUrl}" class="action-btn">${buttonText}</a>
-          <div class="expiration-notice">Liên kết này có hiệu lực trong vòng 10 phút</div>
-        </div>
-
-        <div class="raw-link-container">
-          <div class="raw-link-title">Nếu nút trên không hoạt động, vui lòng copy đường dẫn dưới đây dán vào trình duyệt:</div>
-          <a href="${actionUrl}" class="raw-link">${actionUrl}</a>
+        <div class="otp-container">
+          <div class="otp-label">Mã xác thực của bạn (OTP)</div>
+          <div class="otp-code">${code}</div>
+          <div class="expiration-notice">Mã xác nhận này có hiệu lực trong vòng 10 phút</div>
         </div>
         
         <p class="welcome-text" style="margin-top: 25px; font-size: 14px; color: #64748b;">

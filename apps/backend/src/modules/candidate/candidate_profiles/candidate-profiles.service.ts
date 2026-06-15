@@ -3,7 +3,6 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { REQUEST } from '@nestjs/core';
@@ -28,7 +27,6 @@ export class CandidateProfilesService extends BaseService {
   constructor(
     @InjectRepository(CandidateProfile)
     private readonly candidateProfileRepository: Repository<CandidateProfile>,
-    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     @Inject(REQUEST)
     protected readonly req: Request & { user?: JWTInfoResponse },

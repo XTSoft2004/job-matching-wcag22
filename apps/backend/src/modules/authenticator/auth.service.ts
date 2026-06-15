@@ -236,10 +236,10 @@ export class AuthService extends BaseService {
     return { accessToken, refreshToken };
   }
 
-  async verifyAccountToken(token: string): Promise<void> {
+  async verifyAccountCode(code: string): Promise<void> {
     const record = await this.verificationCodeRepository.findOne({
       where: {
-        code: token,
+        code,
         type: VerificationCodeType.REGISTER_VERIFY,
         isUsed: false,
       },
@@ -247,12 +247,12 @@ export class AuthService extends BaseService {
 
     if (!record) {
       throw new UnauthorizedException(
-        'Liên kết xác minh không hợp lệ hoặc đã được sử dụng',
+        'Mã xác minh không hợp lệ hoặc đã được sử dụng',
       );
     }
 
     if (record.expiresAt < new Date()) {
-      throw new UnauthorizedException('Liên kết xác minh đã hết hạn');
+      throw new UnauthorizedException('Mã xác minh đã hết hạn');
     }
 
     record.isUsed = true;
@@ -278,25 +278,25 @@ export class AuthService extends BaseService {
     if (!user) {
       return ResponseHttp.success({
         message:
-          'Nếu email tồn tại trên hệ thống, một liên kết khôi phục sẽ được gửi đi',
+          'Nếu email tồn tại trên hệ thống, một mã khôi phục sẽ được gửi đi',
       });
     }
 
-    const token = await this.createVerificationCode(
+    const code = await this.createVerificationCode(
       dto.email,
       VerificationCodeType.PASSWORD_RESET,
     );
-    await this.mailService.sendForgotPasswordCode(dto.email, token);
+    await this.mailService.sendForgotPasswordCode(dto.email, code);
 
     return ResponseHttp.success({
-      message: 'Liên kết khôi phục mật khẩu đã được gửi đến email của bạn',
+      message: 'Mã khôi phục mật khẩu đã được gửi đến email của bạn',
     });
   }
 
-  async validateResetToken(token: string): Promise<string> {
+  async validateResetCode(code: string): Promise<string> {
     const record = await this.verificationCodeRepository.findOne({
       where: {
-        code: token,
+        code,
         type: VerificationCodeType.PASSWORD_RESET,
         isUsed: false,
       },
@@ -304,25 +304,25 @@ export class AuthService extends BaseService {
 
     if (!record) {
       throw new UnauthorizedException(
-        'Liên kết khôi phục mật khẩu không hợp lệ hoặc đã được sử dụng',
+        'Mã khôi phục mật khẩu không hợp lệ hoặc đã được sử dụng',
       );
     }
 
     if (record.expiresAt < new Date()) {
-      throw new UnauthorizedException('Liên kết khôi phục mật khẩu đã hết hạn');
+      throw new UnauthorizedException('Mã khôi phục mật khẩu đã hết hạn');
     }
 
     return record.email;
   }
 
-  async resetPasswordWithToken(
-    token: string,
+  async resetPasswordWithCode(
+    code: string,
     newPassword: string,
   ): Promise<void> {
-    const email = await this.validateResetToken(token);
+    const email = await this.validateResetCode(code);
 
     await this.verificationCodeRepository.update(
-      { code: token, type: VerificationCodeType.PASSWORD_RESET },
+      { code, type: VerificationCodeType.PASSWORD_RESET },
       { isUsed: true },
     );
 
@@ -378,7 +378,7 @@ export class AuthService extends BaseService {
       );
     }
 
-    await this.verifyAccountToken(dto.code);
+    await this.verifyAccountCode(dto.code);
     return ResponseHttp.success({
       message: 'Xác minh tài khoản thành công',
     });
@@ -399,7 +399,7 @@ export class AuthService extends BaseService {
       );
     }
 
-    await this.resetPasswordWithToken(dto.code, dto.newPassword);
+    await this.resetPasswordWithCode(dto.code, dto.newPassword);
     return ResponseHttp.success({
       message: 'Đặt lại mật khẩu thành công',
     });
