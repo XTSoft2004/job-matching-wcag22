@@ -1,0 +1,13 @@
+# AI Coding Instructions & Rules
+
+1. **Standardized HTTP Responses:**
+   - Always format success and error responses using `ResponseHttp` from `apps/backend/src/common/utils/response.util.ts`.
+   - The success responses must contain `statusCode`, `message`, `data`, and optional `meta` for pagination.
+   - Centralized exception formatting is done in `all-exceptions.filter.ts` and must call `ResponseHttp.error`.
+
+2. **Security & Hashing:**
+   - Password hashing must use `HashUtil` from `apps/backend/src/common/utils/hash.util.ts`.
+   - The brypt hashing process must perform a pre-hash via HMAC-SHA256 with a pepper key (env DB_PEPPER, fallback 'xuantruong2004') and 12 salt rounds using `bcryptjs`.
+
+3. **Pagination Standard:**
+   - Always use `BasePaginateQuery` from `apps/backend/src/common/dto/base-paginate-query.dto.ts` for pagination input validation and processing.

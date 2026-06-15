@@ -1,0 +1,14 @@
+{
+  "name": "job-matching-wcag22-root",
+  "version": "1.0.0",
+  "description": "Monorepo workspace coordinator for JobMatching WCAG 2.2 project",
+  "private": true,
+  "scripts": {
+    "dev:backend": "pnpm --prefix apps/backend start:dev",
+    "build:backend": "pnpm --prefix apps/backend build",
+    "test:backend": "pnpm --prefix apps/backend test",
+    "lint:backend": "pnpm --prefix apps/backend lint",
+    "dev:ai": "cd apps/ai-tools && .venv\\Scripts\\python -m uvicorn main:app --reload",
+    "install:backend": "pnpm --prefix apps/backend install"
+  }
+}

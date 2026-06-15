@@ -1,0 +1,178 @@
+{
+  "version": "2.0.0",
+  "darkMode": true,
+  "gridEnabling": true,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "tablePositions": [
+      {
+        "name": "users",
+        "schemaName": "public",
+        "x": 1000,
+        "y": 100
+      },
+      {
+        "name": "candidate_profiles",
+        "schemaName": "public",
+        "x": 500,
+        "y": 100
+      },
+      {
+        "name": "jobs",
+        "schemaName": "public",
+        "x": 1500,
+        "y": 100
+      },
+      {
+        "name": "applications",
+        "schemaName": "public",
+        "x": 1000,
+        "y": 600
+      },
+      {
+        "name": "saved_jobs",
+        "schemaName": "public",
+        "x": 1500,
+        "y": 600
+      },
+      {
+        "name": "notifications",
+        "schemaName": "public",
+        "x": 500,
+        "y": 600
+      },
+      {
+        "name": "user_tokens",
+        "schemaName": "public",
+        "x": 1000,
+        "y": -200
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "candidate_profiles",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "employer_id"
+        ],
+        "firstTableName": "jobs",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "job_id"
+        ],
+        "firstTableName": "applications",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "jobs",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "candidate_id"
+        ],
+        "firstTableName": "applications",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "job_id"
+        ],
+        "firstTableName": "saved_jobs",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "jobs",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "saved_jobs",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "notifications",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "user_tokens",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      }
+    ]
+  },
+  "views": {}
+}

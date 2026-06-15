@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pydantic-settings
+faster-whisper
+python-multipart
+sentence-transformers
+pinecone
