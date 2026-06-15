@@ -17,17 +17,20 @@
 
 ## Tổng Quan Hệ Thống Tinh Gọn
 
-Hệ thống được tinh giản từ 15 bảng xuống **11 bảng**, loại bỏ hoàn toàn các bảng danh mục cồng kềnh và các bảng con không cần thiết.
+Hệ thống được thiết kế với **14 bảng**, bao gồm bảng danh mục kỹ năng dùng chung và bảng trung gian quản lý kỹ năng cho tin tuyển dụng.
 
 | Bảng | Vai trò trong hệ thống |
 | :--- | :--- |
 | **`users`** | Lưu trữ thông tin tài khoản chung (Ứng viên, NTD, Admin). Nhà tuyển dụng (Employer) liên kết với công ty qua cột `company_id`. |
 | **`companies`** | Lưu trữ thông tin chi tiết về công ty, doanh nghiệp đăng ký hoạt động. |
-| **`candidate_profiles`** | Hồ sơ cá nhân của ứng viên (role=candidate), liên kết với kinh nghiệm, học vấn và kỹ năng. |
+| **`candidate_profiles`** | Hồ sơ cá nhân của ứng viên (role=candidate), liên kết với kinh nghiệm, học vấn, kỹ năng và CVs. |
 | **`candidate_experiences`** | Lưu các mốc kinh nghiệm làm việc chi tiết của ứng viên. |
 | **`candidate_educations`** | Lưu lịch sử học tập, đào tạo tại trường học, trung tâm của ứng viên. |
-| **`candidate_skills`** | Lưu danh sách kỹ năng chuyên môn của ứng viên. |
-| **`jobs`** | Tin tuyển dụng của doanh nghiệp, có quản lý thời gian bắt đầu và kết thúc đăng tuyển. |
+| **`skills`** | Danh mục kỹ năng hệ thống dùng chung (React, NodeJS, Figma...). |
+| **`candidate_skills`** | Lưu danh sách kỹ năng chuyên môn của ứng viên (liên kết với bảng `skills`). |
+| **`candidate_cvs`** | Lưu danh sách các file CV tải lên của ứng viên. |
+| **`jobs`** | Tin tuyển dụng của doanh nghiệp, có quản lý thời gian đăng tuyển, liên kết với kỹ năng qua bảng `job_skills`. |
+| **`job_skills`** | Bảng trung gian liên kết các kỹ năng yêu cầu của tin tuyển dụng (`jobs`) với danh mục (`skills`). |
 | **`applications`** | Lưu đơn ứng tuyển của ứng viên kèm bản chụp CV (CV snapshot) tại thời điểm ứng tuyển. |
 | **`saved_jobs`** | Lưu trữ danh sách tin tuyển dụng yêu thích của ứng viên. |
 | **`notifications`** | Thông báo hệ thống cho người dùng (ứng tuyển thành công, tin mới, v.v.). |
@@ -90,16 +93,12 @@ erDiagram
         decimal expected_salary_max "Lương tối đa"
         boolean is_open_to_work "Sẵn sàng nhận việc"
         
-        %% Đính kèm CV
-        varchar cv_url "Đường dẫn file CV chính"
-        varchar cv_file_name "Tên file CV chính"
-        
         timestamp created_at "Ngày tạo"
         timestamp updated_at "Ngày cập nhật"
     }
 
     %% ============================================
-    %% KINH NGHIỆM, HỌC VẤN & KỸ NĂNG CỦA ỨNG VIÊN
+    %% KINH NGHIỆM, HỌC VẤN, KỸ NĂNG & CVS CỦA ỨNG VIÊN
     %% ============================================
     candidate_experiences {
         int id PK "ID kinh nghiệm"
@@ -126,11 +125,29 @@ erDiagram
         timestamp updated_at "Ngày cập nhật"
     }
 
-    candidate_skills {
+    skills {
         int id PK "ID kỹ năng"
-        int profile_id FK "ID hồ sơ ứng viên"
-        varchar skill_name "Tên kỹ năng"
+        varchar name UK "Tên kỹ năng"
         timestamp created_at "Ngày tạo"
+        timestamp updated_at "Ngày cập nhật"
+    }
+
+    candidate_skills {
+        int id PK "ID kỹ năng ứng viên"
+        int profile_id FK "ID hồ sơ ứng viên"
+        int skill_id FK "ID kỹ năng"
+        timestamp created_at "Ngày tạo"
+        timestamp updated_at "Ngày cập nhật"
+    }
+
+    candidate_cvs {
+        int id PK "ID CV"
+        int profile_id FK "ID hồ sơ ứng viên"
+        varchar cv_url "Đường dẫn file CV"
+        text description "Mô tả/Ghi chú bản CV"
+        boolean is_main "Là CV chính"
+        timestamp created_at "Ngày tạo"
+        timestamp updated_at "Ngày cập nhật"
     }
 
     %% ============================================
@@ -146,7 +163,7 @@ erDiagram
         text requirements "Yêu cầu ứng viên"
         text benefits "Quyền lợi"
         varchar industry "Ngành nghề"
-        enum job_type "Loại hình công việc"
+        enum job_type "Loại hình công việc (Toàn thời gian | Bán thời gian | Làm từ xa | Freelance | Thực tập)"
         varchar experience_level "Yêu cầu kinh nghiệm"
         int quantity "Số lượng tuyển"
         decimal salary_min "Lương tối thiểu"
@@ -154,9 +171,6 @@ erDiagram
         boolean is_salary_negotiable "Lương thỏa thuận"
         varchar work_address "Địa chỉ làm việc"
         varchar province "Tỉnh/Thành phố làm việc"
-        
-        %% Tích hợp kỹ năng
-        text_array skills "Mảng kỹ năng yêu cầu (TEXT[])"
         
         enum status "draft | active | paused | closed"
         boolean is_featured "Tin nổi bật"
@@ -170,6 +184,14 @@ erDiagram
         date deadline "Hạn nộp"
         timestamp published_at "Ngày đăng tin"
         
+        timestamp created_at "Ngày tạo"
+        timestamp updated_at "Ngày cập nhật"
+    }
+
+    job_skills {
+        int id PK "ID kỹ năng tin tuyển dụng"
+        int job_id FK "ID tin tuyển dụng"
+        int skill_id FK "ID kỹ năng"
         timestamp created_at "Ngày tạo"
         timestamp updated_at "Ngày cập nhật"
     }
@@ -238,12 +260,17 @@ erDiagram
     candidate_profiles ||--o{ candidate_experiences : "có kinh nghiệm làm việc"
     candidate_profiles ||--o{ candidate_educations : "có học vấn/chứng chỉ"
     candidate_profiles ||--o{ candidate_skills : "có kỹ năng"
+    skills ||--o{ candidate_skills : "thuộc danh mục"
+    candidate_profiles ||--o{ candidate_cvs : "có danh sách CV"
     
     jobs ||--o{ applications : "nhận đơn ứng tuyển"
     users ||--o{ applications : "nộp đơn ứng tuyển"
     
     users ||--o{ saved_jobs : "lưu tin"
     jobs ||--o{ saved_jobs : "được lưu bởi"
+
+    jobs ||--o{ job_skills : "yêu cầu kỹ năng"
+    skills ||--o{ job_skills : "thuộc danh mục"
 ```
 
 ---
@@ -289,7 +316,7 @@ erDiagram
 ---
 
 ### 3. 📝 `candidate_profiles` — Hồ sơ ứng viên
-> Mỗi user có vai trò `candidate` sẽ sở hữu tối đa 1 bản ghi hồ sơ. Toàn bộ thông tin hồ sơ của ứng viên bao gồm thông tin cá nhân cơ bản và liên kết đến các bảng chi tiết về kinh nghiệm, học vấn và kỹ năng.
+> Mỗi user có vai trò `candidate` sẽ sở hữu tối đa 1 bản ghi hồ sơ. Toàn bộ thông tin hồ sơ của ứng viên bao gồm thông tin cá nhân cơ bản và liên kết đến các bảng chi tiết về kinh nghiệm, học vấn, kỹ năng và danh sách CVs.
 
 | Trường | Kiểu | Mô tả |
 | :--- | :--- | :--- |
@@ -305,8 +332,6 @@ erDiagram
 | `expected_salary_min`| DECIMAL | Mức lương mong muốn tối thiểu (VND) |
 | `expected_salary_max`| DECIMAL | Mức lương mong muốn tối đa (VND) |
 | `is_open_to_work` | BOOLEAN | Trạng thái sẵn sàng nhận việc làm |
-| **`cv_url`** | VARCHAR | Đường dẫn tệp CV chính tải lên hệ thống |
-| **`cv_file_name`** | VARCHAR | Tên hiển thị của tệp CV chính |
 | `created_at` | TIMESTAMP | Ngày tạo hồ sơ |
 | `updated_at` | TIMESTAMP | Ngày cập nhật |
 
@@ -347,20 +372,48 @@ erDiagram
 
 ---
 
-### 3.3. 🛠️ `candidate_skills` — Kỹ năng của ứng viên
-> Lưu danh sách kỹ năng chuyên môn của ứng viên.
+### 3.3. 🗂️ `skills` — Danh mục kỹ năng hệ thống
+> Danh mục các kỹ năng công nghệ và chuyên môn dùng chung trên toàn hệ thống (React, NodeJS, Figma...).
+
+| Trường | Kiểu | Mô tả |
+| :--- | :--- | :--- |
+| `id` | INT (PK) | ID tự tăng |
+| `name` | VARCHAR (UK) | Tên kỹ năng chuyên môn, duy nhất |
+| `created_at` | TIMESTAMP | Ngày tạo |
+| `updated_at` | TIMESTAMP | Ngày cập nhật gần nhất |
+
+---
+
+### 3.4. 🛠️ `candidate_skills` — Kỹ năng của ứng viên
+> Liên kết hồ sơ ứng viên với các kỹ năng từ danh mục hệ thống.
+
+| Trường | Kiểu | Mô tả |
+| :--- | :--- | :--- |
+| `id` | INT (PK) | ID tự tăng |
+| **`profile_id`** | INT (FK) | Liên kết đến hồ sơ ứng viên `candidate_profiles.id` (CASCADE) |
+| **`skill_id`** | INT (FK) | Liên kết đến danh mục kỹ năng `skills.id` (CASCADE) |
+| `created_at` | TIMESTAMP | Ngày tạo |
+| `updated_at` | TIMESTAMP | Ngày cập nhật gần nhất |
+
+---
+
+### 3.5. 📄 `candidate_cvs` — Danh sách CV của ứng viên
+> Lưu trữ danh sách các file CV đã tải lên của ứng viên.
 
 | Trường | Kiểu | Mô tả |
 | :--- | :--- | :--- |
 | `id` | INT (PK) | ID tự tăng |
 | **`profile_id`** | INT (FK) | Liên kết đến hồ sơ ứng viên `candidate_profiles.id` |
-| `skill_name` | VARCHAR | Tên kỹ năng chuyên môn (Ví dụ: "React", "TypeScript") |
+| `cv_url` | VARCHAR | Đường dẫn file CV trên hệ thống lưu trữ |
+| `description` | TEXT | Ghi chú/Mô tả về bản CV (Ví dụ: "CV Node.js", "CV Tiếng Anh") |
+| `is_main` | BOOLEAN | Đánh dấu CV chính dùng để ứng tuyển |
 | `created_at` | TIMESTAMP | Ngày tạo |
+| `updated_at` | TIMESTAMP | Ngày cập nhật gần nhất |
 
 ---
 
 ### 4. 💼 `jobs` — Tin tuyển dụng
-> Tin tuyển dụng do Employer đăng tuyển đại diện cho một Company. Ngành nghề và khu vực tỉnh thành được lưu trực tiếp dưới dạng chuỗi giúp lọc và hiển thị nhanh chóng. Kỹ năng yêu cầu được lưu dạng mảng chuỗi giúp truy vấn trực tiếp bằng toán tử mảng của PostgreSQL.
+> Tin tuyển dụng do Employer đăng tuyển đại diện cho một Company. Ngành nghề và khu vực tỉnh thành được lưu trực tiếp dưới dạng chuỗi giúp lọc và hiển thị nhanh chóng. Kỹ năng yêu cầu được quản lý thông qua bảng liên kết `job_skills`.
 
 | Trường | Kiểu | Mô tả |
 | :--- | :--- | :--- |
@@ -373,7 +426,7 @@ erDiagram
 | `requirements` | TEXT | Các yêu cầu đối với ứng viên |
 | `benefits` | TEXT | Quyền lợi ứng viên nhận được |
 | `industry` | VARCHAR | Lĩnh vực/Ngành nghề hoạt động của công việc |
-| `job_type` | ENUM | Loại hình công việc (`full_time`, `part_time`, `remote`...) |
+| `job_type` | ENUM | Loại hình công việc ("Toàn thời gian", "Bán thời gian", "Làm từ xa", "Freelance", "Thực tập") |
 | `experience_level` | VARCHAR | Yêu cầu kinh nghiệm đối với vị trí tuyển |
 | `quantity` | INT | Số lượng cần tuyển |
 | `salary_min` | DECIMAL | Mức lương tối thiểu (VND) |
@@ -459,7 +512,7 @@ erDiagram
 ---
 
 ## 🔐 Các Ràng Buộc Cơ Bản
-- **Khóa ngoại tự động xóa (CASCADE):** Các bản ghi ở bảng con (`candidate_profiles`, `candidate_experiences`, `candidate_educations`, `candidate_skills`, `jobs`, `applications`, `saved_jobs`, `notifications`, `user_tokens`) sẽ tự động được xóa sạch khi tài khoản người dùng (`users.id`) tương ứng bị xóa khỏi hệ thống. Đồng thời, khi xóa một hồ sơ ứng viên (`candidate_profiles.id`), các thông tin liên quan gồm kinh nghiệm (`candidate_experiences`), học vấn (`candidate_educations`), và kỹ năng (`candidate_skills`) cũng sẽ tự động bị xóa (CASCADE).
+- **Khóa ngoại tự động xóa (CASCADE):** Các bản ghi ở bảng con (`candidate_profiles`, `candidate_experiences`, `candidate_educations`, `candidate_skills`, `candidate_cvs`, `jobs`, `job_skills`, `applications`, `saved_jobs`, `notifications`, `user_tokens`) sẽ tự động được xóa sạch khi các bản ghi chính tương ứng bị xóa. Ví dụ, khi xóa hồ sơ ứng viên (`candidate_profiles.id`) hoặc tin tuyển dụng (`jobs.id`), các liên kết trong `candidate_skills` và `job_skills` sẽ bị xóa theo (CASCADE ON DELETE). Tương tự khi một kỹ năng trong danh mục `skills.id` bị xóa, các dòng tương ứng ở `candidate_skills` và `job_skills` cũng tự động bị xóa sạch.
 - **Ràng buộc khi xóa Công ty (companies):** Khi xóa một công ty (`companies.id`), các tin tuyển dụng (`jobs`) liên quan sẽ tự động bị xóa (CASCADE). Trường liên kết công ty của các người dùng tuyển dụng (`users.company_id`) sẽ được gán giá trị `NULL` (SET NULL) để không làm mất tài khoản người dùng.
-- **Unique key:** Email người dùng (`users.email`), link slug của tin tuyển dụng (`jobs.slug`) là bắt buộc duy nhất trên toàn bộ cơ sở dữ liệu.
-- **Index:** Tăng hiệu năng tìm kiếm việc làm bằng cách đánh Index trên các trường lọc nhiều nhất: `jobs.province`, `jobs.industry`, `jobs.status`, `jobs.deadline`, `jobs.posting_start_at`, `jobs.posting_end_at`, `candidate_profiles.province`, `users.company_id`, `jobs.company_id`, `candidate_experiences.profile_id`, `candidate_educations.profile_id`, `candidate_skills.profile_id`.
+- **Unique key:** Email người dùng (`users.email`), link slug của tin tuyển dụng (`jobs.slug`), tên kỹ năng (`skills.name`) là bắt buộc duy nhất trên toàn bộ cơ sở dữ liệu. Đồng thời, các cặp `(profile_id, skill_id)` trong `candidate_skills` và `(job_id, skill_id)` trong `job_skills` là duy nhất để tránh gán trùng lặp kỹ năng.
+- **Index:** Tăng hiệu năng tìm kiếm việc làm bằng cách đánh Index trên các trường lọc nhiều nhất: `jobs.province`, `jobs.industry`, `jobs.status`, `jobs.deadline`, `jobs.posting_start_at`, `jobs.posting_end_at`, `candidate_profiles.province`, `users.company_id`, `jobs.company_id`, `candidate_experiences.profile_id`, `candidate_educations.profile_id`, `candidate_skills.profile_id`, `candidate_skills.skill_id`, `candidate_cvs.profile_id`, `job_skills.job_id`, `job_skills.skill_id`, `skills.name`.
