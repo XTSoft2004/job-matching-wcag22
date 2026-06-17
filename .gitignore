@@ -76,3 +76,4 @@ build/config.gypi
 # OS metadata
 .DS_Store
 Thumbs.db
+__pycache__

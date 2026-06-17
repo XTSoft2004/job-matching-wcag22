@@ -5,6 +5,8 @@ import { ApiPropertyOptional, ApiHideProperty } from '@nestjs/swagger';
 
 export class BasePaginateQuery implements Partial<PaginateQuery> {
   @ApiHideProperty()
+  @IsOptional()
+  @IsString()
   path!: string;
 
   @ApiPropertyOptional({

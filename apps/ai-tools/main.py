@@ -9,7 +9,7 @@ sys.stderr.reconfigure(encoding='utf-8')
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
-from api.endpoints import audio, navigation
+from api.endpoints import audio, navigation, jobs
 
 # Setup logging
 logging.basicConfig(
@@ -47,3 +47,4 @@ app.add_middleware(
 
 app.include_router(audio.router, prefix=f"{settings.api_v1_str}/audio", tags=["audio"])
 app.include_router(navigation.router, prefix=f"{settings.api_v1_str}/navigation", tags=["navigation"])
+app.include_router(jobs.router, prefix=f"{settings.api_v1_str}/jobs", tags=["jobs"])

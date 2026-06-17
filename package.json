@@ -10,6 +10,20 @@
     "lint:backend": "pnpm --prefix apps/backend lint",
     "dev:ai": "cd apps/ai-tools && .venv\\Scripts\\python -m uvicorn main:app --reload",
     "install:backend": "pnpm --prefix apps/backend install",
-    "seed:backend": "pnpm --prefix apps/backend db:seed"
+    "seed:backend": "pnpm --prefix apps/backend db:seed",
+    "dev:frontend": "pnpm --prefix apps/frontend dev",
+    "install:frontend": "pnpm --prefix apps/frontend install",
+    "dev:all": "concurrently \"pnpm dev:backend\" \"pnpm dev:frontend\"",
+    "sync:jobs": "node sync_jobs_vector.mjs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@scarf/scarf",
+      "unrs-resolver",
+      "esbuild"
+    ]
+  },
+  "dependencies": {
+    "concurrently": "^10.0.3"
   }
 }

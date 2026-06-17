@@ -4,6 +4,7 @@ from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone
 from services.base import BaseVectorService
 from schemas.navigation import NavigationRouteSchema
+from schemas.job import JobPayloadSchema
 from core.config import settings
 
 class PineconeVectorService(BaseVectorService):
@@ -41,34 +42,52 @@ class PineconeVectorService(BaseVectorService):
         for i in range(0, len(vectors), batch_size):
             self.index.upsert(vectors=vectors[i:i + batch_size])
 
-    def extract_keywords(self, text: str) -> str:
-        import re
-        # Xóa dấu câu, chỉ giữ lại chữ cái và khoảng trắng
-        clean_text = re.sub(r'[^\w\s]', '', text.lower())
-        
-        # Danh sách các từ thừa (stop words) thường gặp khi ra lệnh bằng giọng nói
-        stop_words = {
-            "hãy", "hay", "mở", "mo", "giúp", "tôi", "cho", "xem", "vào", "đến", "đi", "nào", 
-            "chuyển", "sang", "điều", "hướng", "cái", "này", "kia", "nhé", "nha", "thử"
-        }
-        words = clean_text.split()
-        keywords = [word for word in words if word not in stop_words]
-        
-        # Nếu loại bỏ hết mà không còn gì, thì giữ lại nguyên văn
-        if not keywords:
-            return clean_text
-        return " ".join(keywords)
+    async def embed_job(self, job: JobPayloadSchema) -> None:
+        chunks = []
+        if job.description:
+            chunks.append(("description", job.description))
+        if job.requirements:
+            chunks.append(("requirements", job.requirements))
+        if job.benefits:
+            chunks.append(("benefits", job.benefits))
+            
+        vectors = []
+        for section, text in chunks:
+            text_to_encode = f"Job Title: {job.title}\n{section.capitalize()}: {text}"
+            embedding = self.model.encode(text_to_encode).tolist()
+            
+            vector_id = f"job_{job.id}_{section}"
+            metadata = {
+                "type": "job",
+                "job_id": job.id,
+                "title": job.title,
+                "company_id": job.companyId,
+                "industry": job.industry or "",
+                "job_type": job.jobType,
+                "province": job.province or "",
+                "section": section,
+                "text": text[:1000] # truncate text if too long to save space
+            }
+            vectors.append({
+                "id": vector_id,
+                "values": embedding,
+                "metadata": metadata
+            })
+            
+        if vectors:
+            self.index.upsert(vectors=vectors)
 
     async def search_route(self, query_text: str) -> NavigationRouteSchema | None:
-        filtered_query = self.extract_keywords(query_text)
-        print(f"🧠 [Keyword Extraction]: '{query_text}' -> '{filtered_query}'")
+        # Use full query_text for semantic meaning without removing keywords
+        print(f"🧠 [Semantic Search Route]: '{query_text}'")
         
-        query_embedding = self.model.encode(filtered_query).tolist()
+        query_embedding = self.model.encode(query_text).tolist()
         
         response = self.index.query(
             vector=query_embedding,
             top_k=5,
-            include_metadata=True
+            include_metadata=True,
+            filter={"type": {"$ne": "job"}} # avoid returning jobs when searching for routes, assuming we tag routes or jobs have type=job
         )
         
         if not response.matches:
@@ -108,3 +127,49 @@ class PineconeVectorService(BaseVectorService):
             keywords=metadata.get("keywords", []),
             description=metadata.get("description", "")
         )
+
+    async def search_jobs(self, query_text: str, top_k: int = 5) -> list[dict]:
+        # Perform semantic search on the full query text to capture context
+        print(f"🧠 [Semantic Search Jobs]: '{query_text}'")
+        query_embedding = self.model.encode(query_text).tolist()
+        
+        response = self.index.query(
+            vector=query_embedding,
+            top_k=top_k * 3, # fetch more since we might have multiple chunks per job
+            include_metadata=True,
+            filter={"type": "job"}
+        )
+        
+        if not response.matches:
+            print("⚠️ Không tìm thấy công việc nào phù hợp.")
+            return []
+            
+        # Deduplicate jobs (we chunked them by section, so multiple chunks might match the same job)
+        seen_job_ids = set()
+        jobs = []
+        
+        for match in response.matches:
+            metadata = match.metadata
+            job_id = metadata.get("job_id")
+            
+            if job_id not in seen_job_ids:
+                seen_job_ids.add(job_id)
+                # Keep score to rank
+                jobs.append({
+                    "score": match.score,
+                    "job_id": job_id,
+                    "title": metadata.get("title"),
+                    "company_id": metadata.get("company_id"),
+                    "industry": metadata.get("industry"),
+                    "job_type": metadata.get("job_type"),
+                    "province": metadata.get("province"),
+                    "matched_section": metadata.get("section"),
+                    "matched_text_preview": metadata.get("text", "")[:200]
+                })
+                
+            if len(jobs) >= top_k:
+                break
+                
+        # Return sorted by score
+        jobs.sort(key=lambda x: x["score"], reverse=True)
+        return jobs

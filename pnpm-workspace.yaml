@@ -1,2 +1,6 @@
 packages:
   - 'apps/*'
+allowBuilds:
+  '@scarf/scarf': true
+  esbuild: false
+  unrs-resolver: true

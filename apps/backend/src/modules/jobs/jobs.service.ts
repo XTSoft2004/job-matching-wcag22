@@ -67,6 +67,20 @@ export class JobsService extends BaseService {
 
     this.setAuditForCreate(job);
     await this.jobRepository.save(job);
+
+    // Call AI Tools to embed the job asynchronously
+    try {
+      fetch('http://127.0.0.1:8000/api/v1/jobs/embed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(job),
+      }).catch(err => console.error('Failed to call AI Tools embedding webhook:', err));
+    } catch (error) {
+      console.error('Error triggering embedding:', error);
+    }
+
     return ResponseHttp.success({
       message: 'Tạo tin tuyển dụng mới thành công',
     });
