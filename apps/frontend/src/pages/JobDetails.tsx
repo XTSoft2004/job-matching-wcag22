@@ -16,7 +16,13 @@ import {
   AlertCircle,
   CheckCircle2,
   X,
-  Mail
+  Mail,
+  User,
+  Phone,
+  FileText,
+  ChevronDown,
+  Upload,
+  Paperclip
 } from 'lucide-react';
 
 interface JobDetailData {
@@ -57,11 +63,11 @@ export default function JobDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [job, setJob] = useState<JobDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Application Modal state
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
@@ -72,7 +78,7 @@ export default function JobDetails() {
   const [cvList, setCvList] = useState<any[]>([]);
   const [selectedCvId, setSelectedCvId] = useState<number | null>(null);
   const [isNewCv, setIsNewCv] = useState(false);
-  const [newCvUrl, setNewCvUrl] = useState('');
+  const [newCvFile, setNewCvFile] = useState<File | null>(null);
   const [newCvDesc, setNewCvDesc] = useState('');
   const [coverLetter, setCoverLetter] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
@@ -125,7 +131,7 @@ export default function JobDetails() {
       navigate('/login', { state: { from: `/jobs/${id}` } });
       return;
     }
-    
+
     if (user.role !== 'Ứng viên') {
       notification.error({
         message: 'Quyền truy cập hạn chế',
@@ -144,12 +150,12 @@ export default function JobDetails() {
         throw new Error('Không tìm thấy thông tin hồ sơ của bạn.');
       }
       setProfileId(profileData.id);
-      
+
       // Fetch CVs list
       const cvsRes: any = await api.get(`/candidate-cvs/profile/${profileData.id}`);
       const cvs = cvsRes.data?.data || cvsRes.data || [];
       setCvList(cvs);
-      
+
       if (cvs.length > 0) {
         setSelectedCvId(cvs[0].id);
         setIsNewCv(false);
@@ -171,29 +177,33 @@ export default function JobDetails() {
   // Handle Application Submit
   const handleApplyConfirm = async () => {
     if (!user || !profileId) return;
-    
+
     setApplying(true);
     try {
       let cvIdToSubmit = selectedCvId;
-      
+
       // Create CV inline if selected new CV
-      if (isNewCv) {
-        if (!newCvUrl.trim()) {
+      if (isNewCv || cvList.length === 0) {
+        if (!newCvFile) {
           notification.error({
-            message: 'Thiếu liên kết CV',
-            description: 'Vui lòng nhập đường dẫn liên kết đến file CV của bạn.'
+            message: 'Thiếu tệp tin CV',
+            description: 'Vui lòng chọn tệp tin CV của bạn để tải lên.'
           });
           setApplying(false);
           return;
         }
-        
+
+        // Upload to Supabase Storage
+        const { uploadCvToSupabase } = await import('../services/supabase');
+        const publicUrl = await uploadCvToSupabase(newCvFile);
+
         // Add new CV
         await api.post('/candidate-cvs', {
           profileId: profileId,
-          cvUrl: newCvUrl,
-          description: newCvDesc || `CV nộp cho vị trí ${job?.title}`
+          cvUrl: publicUrl,
+          description: newCvDesc.trim() || newCvFile.name
         });
-        
+
         // Fetch CVs list again to get the newly created CV's ID (at index 0)
         const cvsRes: any = await api.get(`/candidate-cvs/profile/${profileId}`);
         const cvs = cvsRes.data?.data || cvsRes.data || [];
@@ -202,7 +212,7 @@ export default function JobDetails() {
         }
         cvIdToSubmit = cvs[0].id;
       }
-      
+
       if (!cvIdToSubmit) {
         notification.error({
           message: 'Thiếu thông tin CV',
@@ -224,12 +234,12 @@ export default function JobDetails() {
         message: 'Ứng tuyển thành công!',
         description: `Hồ sơ của bạn đã được gửi trực tiếp đến nhà tuyển dụng cho vị trí "${job?.title}".`
       });
-      
+
       setIsApplied(true);
       setIsApplyModalOpen(false);
-      
+
       // Reset form fields
-      setNewCvUrl('');
+      setNewCvFile(null);
       setNewCvDesc('');
       setCoverLetter('');
     } catch (err: any) {
@@ -247,10 +257,10 @@ export default function JobDetails() {
   const formatSalary = () => {
     if (!job) return '';
     if (job.isSalaryNegotiable) return 'Thỏa thuận';
-    
+
     const min = job.salaryMin ? Number(job.salaryMin).toLocaleString() : null;
     const max = job.salaryMax ? Number(job.salaryMax).toLocaleString() : null;
-    
+
     if (min && max) return `${min} - ${max} VND`;
     if (min) return `Từ ${min} VND`;
     if (max) return `Lên đến ${max} VND`;
@@ -301,8 +311,8 @@ export default function JobDetails() {
     <div className="max-w-7xl mx-auto space-y-8 pb-16 animate-fade-in relative">
       {/* Back button */}
       <div>
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold py-2 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -312,10 +322,10 @@ export default function JobDetails() {
 
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        
+
         {/* Left column: Job Details content */}
         <div className="lg:col-span-2 space-y-6">
-          
+
           {/* Main Card Header */}
           <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
             <div className="space-y-4">
@@ -402,12 +412,12 @@ export default function JobDetails() {
 
         {/* Right column: Company Info & Action Panel */}
         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-          
+
           {/* Action apply card */}
           <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm text-center space-y-4">
             <h3 className="font-bold text-gray-900 text-lg">Ứng tuyển công việc này</h3>
             <p className="text-sm text-gray-500">Hồ sơ cá nhân và thông tin liên hệ của bạn sẽ được gửi trực tiếp đến nhà tuyển dụng.</p>
-            
+
             {isApplied ? (
               <div className="flex items-center justify-center gap-2 p-3 bg-green-50 border border-green-200 text-green-800 rounded-xl font-semibold text-sm">
                 <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -432,7 +442,7 @@ export default function JobDetails() {
           {job.company && (
             <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm space-y-6">
               <h3 className="font-bold text-gray-900 text-lg border-b border-gray-100 pb-3">Thông tin doanh nghiệp</h3>
-              
+
               <div className="flex items-center gap-4">
                 {job.company.logo ? (
                   <img
@@ -500,15 +510,19 @@ export default function JobDetails() {
 
       {/* Accessible Apply Modal Overlay */}
       {isApplyModalOpen && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+        <div
+          onClick={() => setIsApplyModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity cursor-pointer"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
         >
           {/* Modal box */}
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-2xl max-w-lg w-full p-6 relative overflow-hidden animate-slide-up text-left">
-            
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl border border-gray-200 shadow-2xl max-w-lg w-full p-6 relative overflow-hidden animate-slide-up text-left cursor-default"
+          >
+
             {/* Close button */}
             <button
               onClick={() => setIsApplyModalOpen(false)}
@@ -525,94 +539,129 @@ export default function JobDetails() {
               </div>
             ) : (
               <div className="space-y-5">
-                <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-                  <div className="h-10 w-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-700 shrink-0">
+                <div className="flex items-center gap-3.5 border-b border-gray-100 pb-4">
+                  <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-emerald-100">
                     <Briefcase className="h-5.5 w-5.5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h3 id="modal-title" className="text-lg font-black text-gray-900 leading-tight">
                       Ứng tuyển công việc
                     </h3>
-                    <p className="text-gray-500 text-xs mt-0.5 truncate max-w-sm font-semibold">{job.title}</p>
+                    <p className="text-gray-500 text-xs mt-1 truncate font-semibold" title={job.title}>
+                      {job.title}
+                    </p>
                   </div>
                 </div>
 
                 {/* Candidate Summary */}
                 {user && (
-                  <div className="p-3.5 bg-gray-50 rounded-2xl border border-gray-150 space-y-1.5 text-xs text-gray-600 font-semibold">
-                    <p className="text-gray-900 font-bold text-sm mb-1">Thông tin liên hệ ứng tuyển</p>
-                    <p>Ứng viên: <span className="text-gray-800 font-bold">{user.fullName}</span></p>
-                    <p>Email: <span className="text-gray-800 font-bold">{user.email}</span></p>
-                    {user.phone && <p>Số điện thoại: <span className="text-gray-800 font-bold">{user.phone}</span></p>}
+                  <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-150/30 rounded-2xl border border-gray-100 space-y-3 shadow-inner">
+                    <p className="text-gray-900 font-extrabold text-[10px] tracking-wider uppercase">Thông tin liên hệ ứng tuyển</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                      <div className="flex items-center gap-2 text-gray-700 font-semibold bg-white px-3 py-2 rounded-xl border border-gray-100 shadow-sm">
+                        <User className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span className="truncate">Ứng viên: <strong className="text-gray-950">{user.fullName}</strong></span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-700 font-semibold bg-white px-3 py-2 rounded-xl border border-gray-100 shadow-sm">
+                        <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span className="truncate" title={user.email}>Email: <strong className="text-gray-950">{user.email}</strong></span>
+                      </div>
+                      {user.phone && (
+                        <div className="flex items-center gap-2 text-gray-700 font-semibold bg-white px-3 py-2 rounded-xl border border-gray-100 shadow-sm sm:col-span-2">
+                          <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>Số điện thoại: <strong className="text-gray-950">{user.phone}</strong></span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
                 {/* CV Selection / Creation Section */}
                 <div className="space-y-3.5">
                   <div>
-                    <label className="label-text block mb-1">Chọn CV ứng tuyển <span className="text-red-500">*</span></label>
+                    <label className="label-text block font-bold text-gray-800 text-sm mb-1.5">Chọn CV ứng tuyển <span className="text-red-500">*</span></label>
                     {cvList.length > 0 ? (
                       <div className="space-y-3">
-                        <select
-                          value={isNewCv ? 'new' : (selectedCvId || '')}
-                          onChange={(e) => {
-                            if (e.target.value === 'new') {
-                              setIsNewCv(true);
-                            } else {
-                              setIsNewCv(false);
-                              setSelectedCvId(Number(e.target.value));
-                            }
-                          }}
-                          className="input-field text-sm"
-                        >
-                          {cvList.map(cv => (
-                            <option key={cv.id} value={cv.id}>
-                              📄 {cv.description || `CV file (${cv.cvUrl.split('/').pop() || 'Liên kết'})`}
-                            </option>
-                          ))}
-                          <option value="new">➕ Nộp bằng link CV mới...</option>
-                        </select>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <select
+                            value={isNewCv ? 'new' : (selectedCvId || '')}
+                            onChange={(e) => {
+                              if (e.target.value === 'new') {
+                                setIsNewCv(true);
+                              } else {
+                                setIsNewCv(false);
+                                setSelectedCvId(Number(e.target.value));
+                              }
+                            }}
+                            className="input-field pl-10 pr-10 text-sm py-2.5 appearance-none w-full bg-white border border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 cursor-pointer shadow-sm font-medium text-gray-800"
+                          >
+                            {cvList.map(cv => (
+                              <option key={cv.id} value={cv.id}>
+                                {cv.description || `CV file (${cv.cvUrl.split('/').pop() || 'Liên kết'})`}
+                              </option>
+                            ))}
+                            <option value="new">➕ Tải lên tệp CV mới...</option>
+                          </select>
+                          <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-400">
+                            <ChevronDown className="w-4 h-4" />
+                          </div>
+                        </div>
                       </div>
                     ) : (
-                      <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-2xl text-xs text-amber-800 flex items-start gap-2 font-medium mb-2">
+                      <div className="p-3.5 bg-amber-50 border border-amber-100 rounded-2xl text-xs text-amber-800 flex items-start gap-2.5 font-semibold mb-2">
                         <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                        <span>Bạn chưa tải lên CV nào. Vui lòng nhập link CV của bạn bên dưới để tiếp tục ứng tuyển.</span>
+                        <span>Bạn chưa tải lên CV nào. Vui lòng chọn tệp tin CV bên dưới để tải lên và tiếp tục ứng tuyển.</span>
                       </div>
                     )}
                   </div>
 
                   {/* Inline upload fields if chosen New CV */}
                   {(isNewCv || cvList.length === 0) && (
-                    <div className="p-4 bg-gray-50/50 border border-gray-200 rounded-2xl space-y-3 animate-fade-in">
+                    <div className="p-4 bg-emerald-50/20 border border-emerald-100 rounded-2xl space-y-3.5 animate-fade-in text-left">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Nhập thông tin CV mới</span>
+                        <span className="text-xs font-extrabold text-emerald-900 uppercase tracking-wider">Tải lên tệp CV mới</span>
                         {cvList.length > 0 && (
                           <button
                             type="button"
                             onClick={() => setIsNewCv(false)}
-                            className="text-primary-700 hover:text-primary-850 font-bold text-xs"
+                            className="text-emerald-700 hover:text-emerald-850 font-bold text-xs hover:underline transition-colors"
                           >
                             Quay lại chọn CV cũ
                           </button>
                         )}
                       </div>
-                      
-                      <div>
-                        <label htmlFor="newCvUrl" className="text-xs text-gray-500 font-bold block mb-1">
-                          Đường dẫn tệp CV (Google Drive, Dropbox, PDF URL...) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          id="newCvUrl"
-                          type="url"
-                          required
-                          placeholder="Ví dụ: https://drive.google.com/file/d/123..."
-                          className="input-field text-xs py-2 px-3"
-                          value={newCvUrl}
-                          onChange={(e) => setNewCvUrl(e.target.value)}
-                        />
+
+                      <div className="space-y-2">
+                        <div className="relative border-2 border-emerald-200 border-dashed hover:border-emerald-500 rounded-2xl p-5 bg-white text-center cursor-pointer transition-all hover:bg-emerald-50/10">
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            required
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files.length > 0) {
+                                setNewCvFile(e.target.files[0]);
+                              }
+                            }}
+                          />
+                          <div className="space-y-2">
+                            <Upload className="mx-auto h-8 w-8 text-emerald-600 animate-pulse" />
+                            <div className="text-xs text-gray-600 font-medium">
+                              {newCvFile ? (
+                                <span className="text-emerald-800 font-bold">📄 {newCvFile.name} ({(newCvFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                              ) : (
+                                <span>Kéo thả tệp tin hoặc <strong className="text-emerald-700">chọn từ thiết bị</strong></span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-gray-400">Hỗ trợ PDF, DOC, DOCX, JPG, PNG lên đến 5MB</p>
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
+                      <div className="space-y-1">
                         <label htmlFor="newCvDesc" className="text-xs text-gray-500 font-bold block mb-1">
                           Tên gọi CV / Mô tả ngắn
                         </label>
@@ -620,7 +669,7 @@ export default function JobDetails() {
                           id="newCvDesc"
                           type="text"
                           placeholder="Ví dụ: CV tiếng Anh - React Developer"
-                          className="input-field text-xs py-2 px-3"
+                          className="input-field text-xs py-2 px-3 bg-white"
                           value={newCvDesc}
                           onChange={(e) => setNewCvDesc(e.target.value)}
                         />
@@ -630,31 +679,33 @@ export default function JobDetails() {
                 </div>
 
                 {/* Cover letter field */}
-                <div>
-                  <label htmlFor="coverLetter" className="label-text block mb-1">Thư giới thiệu (Cover Letter)</label>
-                  <p className="text-gray-400 text-[10px] mb-1 font-semibold">Gợi ý: Nhập lời giới thiệu ngắn gọn, súc tích giúp bạn nổi bật hơn trong mắt nhà tuyển dụng.</p>
-                  <textarea
-                    id="coverLetter"
-                    rows={4}
-                    placeholder="Kính chào nhà tuyển dụng, tôi rất ấn tượng với cơ hội nghề nghiệp này và mong muốn được ứng tuyển. Với kinh nghiệm..."
-                    className="input-field resize-y text-xs"
-                    value={coverLetter}
-                    onChange={(e) => setCoverLetter(e.target.value)}
-                  ></textarea>
+                <div className="space-y-1">
+                  <label htmlFor="coverLetter" className="label-text block font-bold text-gray-800 text-sm">Thư giới thiệu (Cover Letter)</label>
+                  <p className="text-gray-400 text-[10px] font-semibold mb-1">Gợi ý: Nhập lời giới thiệu ngắn gọn, súc tích giúp bạn nổi bật hơn trong mắt nhà tuyển dụng.</p>
+                  <div className="relative">
+                    <textarea
+                      id="coverLetter"
+                      rows={3}
+                      placeholder="Kính chào nhà tuyển dụng, tôi rất ấn tượng với cơ hội nghề nghiệp này và mong muốn được ứng tuyển. Với kinh nghiệm..."
+                      className="input-field resize-y text-xs pl-3 pr-3 py-2.5 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 w-full"
+                      value={coverLetter}
+                      onChange={(e) => setCoverLetter(e.target.value)}
+                    ></textarea>
+                  </div>
                 </div>
 
                 {/* Confirm actions */}
                 <div className="pt-4 flex items-center gap-3 border-t border-gray-100">
                   <button
                     onClick={() => setIsApplyModalOpen(false)}
-                    className="flex-1 py-2.5 border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-xs transition-colors text-center"
+                    className="flex-1 py-2.5 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-extrabold rounded-2xl text-xs transition-all text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 hover:scale-[1.02] active:scale-[0.98]"
                     disabled={applying}
                   >
                     Hủy bỏ
                   </button>
                   <button
                     onClick={handleApplyConfirm}
-                    className="btn-primary flex-1 py-2.5 flex justify-center items-center gap-1.5 shadow-md shadow-primary-100 text-xs font-bold"
+                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-xs flex justify-center items-center gap-1.5 shadow-md shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     disabled={applying}
                   >
                     {applying ? (
@@ -663,7 +714,10 @@ export default function JobDetails() {
                         <span>Đang gửi hồ sơ...</span>
                       </>
                     ) : (
-                      <span>Nộp đơn ứng tuyển</span>
+                      <>
+                        <Paperclip className="w-3.5 h-3.5" />
+                        <span>Nộp đơn ứng tuyển</span>
+                      </>
                     )}
                   </button>
                 </div>
@@ -680,14 +734,14 @@ export default function JobDetails() {
 // Simple Globe icon helper missing in default import of lucide-react if Globe isn't resolved
 function Globe({ className }: { className?: string }) {
   return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
     >
       <circle cx="12" cy="12" r="10" />
