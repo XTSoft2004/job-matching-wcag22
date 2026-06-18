@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { UserPlus, Mail, Lock, User, Phone, AlertCircle } from 'lucide-react';
@@ -6,6 +6,14 @@ import { UserPlus, Mail, Lock, User, Phone, AlertCircle } from 'lucide-react';
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "Đăng ký tài khoản | JobAccess";
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", "Đăng ký tài khoản JobAccess mới cho ứng viên tìm việc làm và nhà tuyển dụng tìm kiếm nhân lực.");
+    }
+  }, []);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

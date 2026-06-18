@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LogOut, User, PlusCircle, Search } from 'lucide-react';
+import logoUrl from '../public/logo.jpg';
 
 export default function MainLayout() {
   const { user, logout, loading } = useAuth();
@@ -41,10 +42,11 @@ export default function MainLayout() {
             <div className="flex-shrink-0 flex items-center">
               <Link 
                 to="/" 
-                className="text-2xl font-black bg-gradient-to-r from-primary-700 to-emerald-500 bg-clip-text text-transparent transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-200 rounded-md px-2 py-1"
-                aria-label="JobMatch Home"
+                className="flex items-center gap-2 text-2xl font-black transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-200 rounded-md px-2 py-1"
+                aria-label="JobAccess Home"
               >
-                JobMatch
+                <img src={logoUrl} alt="Logo JobAccess" className="h-9 w-auto rounded-lg" />
+                <span className="bg-gradient-to-r from-primary-700 to-emerald-500 bg-clip-text text-transparent">JobAccess</span>
               </Link>
             </div>
 
@@ -172,9 +174,12 @@ export default function MainLayout() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12 text-left">
             {/* Column 1: Info */}
             <div className="space-y-4">
-              <span className="text-2xl font-black bg-gradient-to-r from-primary-400 to-emerald-400 bg-clip-text text-transparent">
-                JobMatch
-              </span>
+              <div className="flex items-center gap-2">
+                <img src={logoUrl} alt="" className="h-8 w-auto rounded-md" aria-hidden="true" />
+                <span className="text-2xl font-black bg-gradient-to-r from-primary-400 to-emerald-400 bg-clip-text text-transparent">
+                  JobAccess
+                </span>
+              </div>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Nền tảng tìm kiếm việc làm bằng giọng nói thông minh hỗ trợ người khuyết tật đầu tiên tại Việt Nam. Đáp ứng tiêu chuẩn tiếp cận WCAG 2.2.
               </p>
@@ -220,7 +225,7 @@ export default function MainLayout() {
           </div>
 
           <div className="pt-8 border-t border-gray-800 text-center flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} JobMatch. Tất cả các quyền được bảo lưu.</p>
+            <p>© {new Date().getFullYear()} JobAccess. Tất cả các quyền được bảo lưu.</p>
             <p className="flex items-center gap-2">
               <span>Thiết kế theo tiêu chuẩn tiếp cận</span>
               <span className="px-2 py-0.5 bg-primary-950 text-primary-400 border border-primary-800 rounded text-xs font-semibold">WCAG 2.2 AA</span>

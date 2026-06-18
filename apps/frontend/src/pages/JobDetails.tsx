@@ -106,6 +106,17 @@ export default function JobDetails() {
     fetchJob();
   }, [id]);
 
+  useEffect(() => {
+    if (job) {
+      document.title = `${job.title} | Tuyển dụng tại ${job.company?.name || 'JobAccess'}`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        const sal = job.isSalaryNegotiable ? 'Thỏa thuận' : (job.salaryMin ? `${(job.salaryMin/1000000).toFixed(0)} - ${(job.salaryMax ? job.salaryMax/1000000 : 0).toFixed(0)} triệu` : 'Lương cạnh tranh');
+        metaDesc.setAttribute("content", `Tuyển dụng ${job.title} tại ${job.company?.name || 'doanh nghiệp'}. Mức lương: ${sal}. Địa điểm: ${job.province || 'Toàn quốc'}. Nộp đơn ứng tuyển ngay trên JobAccess.`);
+      }
+    }
+  }, [job]);
+
   // Check if candidate has already applied
   useEffect(() => {
     const checkAppliedStatus = async () => {
@@ -431,7 +442,7 @@ export default function JobDetails() {
                 onClick={handleOpenApplyModal}
                 className="btn-primary w-full py-3 px-6 rounded-2xl font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
               >
-                <span>Ứng tuyển ngay</span>star
+                <span>Ứng tuyển ngay</span>
               </button>
             )}
 

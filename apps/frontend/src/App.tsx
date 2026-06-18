@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import CreateJob from './pages/CreateJob';
 import JobDetails from './pages/JobDetails';
+import SearchResults from './pages/SearchResults';
 import { AuthProvider } from './contexts/AuthContext';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
@@ -24,6 +25,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dang-tin" element={<CreateJob />} />
+            <Route path="/jobs" element={<SearchResults />} />
             <Route path="/jobs/:id" element={<JobDetails />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />

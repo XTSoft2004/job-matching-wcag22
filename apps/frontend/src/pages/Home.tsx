@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import {
   Search,
@@ -27,11 +26,16 @@ interface Job {
 }
 
 export default function Home() {
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('');
+  const selectedProvinceRef = useRef('');
+
+  useEffect(() => {
+    selectedProvinceRef.current = selectedProvince;
+  }, [selectedProvince]);
 
   // Custom states for the new TopCV visual UI
   const [activeTab, setActiveTab] = useState('Tất cả');
@@ -143,7 +147,10 @@ export default function Home() {
         console.log('Transcribed Text (Web Speech API):', text);
         if (text.trim()) {
           setSearchQuery(text);
-          executeSearch(text);
+          const params = new URLSearchParams();
+          params.append('q', text.trim());
+          if (selectedProvinceRef.current) params.append('province', selectedProvinceRef.current);
+          navigate(`/jobs?${params.toString()}`);
         } else {
           setRecordingError('Không thể nhận dạng giọng nói. Hãy thử nói rõ ràng hơn.');
         }
@@ -164,9 +171,7 @@ export default function Home() {
     api.get(url)
       .then((res: any) => {
         let fetchedJobs = res.data || [];
-        if (!query) {
-          setAllJobs(fetchedJobs);
-        }
+
 
         // Filter by province on client side if set
         if (province) {
@@ -183,70 +188,22 @@ export default function Home() {
 
   useEffect(() => {
     fetchJobs('', '');
+    document.title = "JobAccess - Tìm Việc Làm Nhanh 24h & Tuyển Dụng Hỗ Trợ Người Khuyết Tật";
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", "JobAccess - Cổng tuyển dụng và tìm kiếm việc làm bằng giọng nói AI thông minh hỗ trợ người khuyết tật, khiếm thị hàng đầu Việt Nam.");
+    }
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchQuery.trim()) {
-      // If keyword is empty, just filter allJobs by province
-      if (selectedProvince) {
-        const filtered = allJobs.filter((job: any) =>
-          job.province && job.province.toLowerCase().includes(selectedProvince.toLowerCase())
-        );
-        setJobs(filtered);
-      } else {
-        setJobs(allJobs);
-      }
-      setCurrentPage(1);
-      return;
-    }
-    executeSearch(searchQuery, selectedProvince);
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.append('q', searchQuery.trim());
+    if (selectedProvince) params.append('province', selectedProvince);
+    navigate(`/jobs?${params.toString()}`);
   };
 
-  // Execute Vector Search with Fallback to Normal Search
-  const executeSearch = async (text: string, province: string = selectedProvince) => {
-    setLoading(true);
-    try {
-      console.log('Attempting Semantic Vector Search for:', text);
-      const vectorRes = await axios.post('http://127.0.0.1:8000/api/v1/jobs/search', {
-        query_text: text
-      });
 
-      const vectorData = vectorRes.data?.data || [];
-      if (vectorData.length > 0) {
-        // Extract matched job IDs in order of score
-        const matchedIds = vectorData.map((item: any) => Number(item.job_id));
-
-        // Fetch these specific jobs from backend
-        const res: any = await api.get(`/jobs?ids=${matchedIds.join(',')}&limit=${matchedIds.length}`);
-        const fetchedJobs = res.data || [];
-
-        // Sort the fetched jobs in the exact order of score rank from Pinecone
-        let sortedJobs = matchedIds
-          .map((id: number) => fetchedJobs.find((job: any) => job.id === id))
-          .filter((job: any): job is Job => !!job);
-
-        // Filter by province on frontend if selected
-        if (province) {
-          sortedJobs = sortedJobs.filter((job: any) =>
-            job.province && job.province.toLowerCase().includes(province.toLowerCase())
-          );
-        }
-
-        setJobs(sortedJobs);
-        setCurrentPage(1);
-        setLoading(false);
-        return;
-      }
-
-      // Fallback if vector database search returned no matches
-      fetchJobs(text, province);
-    } catch (err) {
-      console.warn('Vector Search failed, falling back to standard text search:', err);
-      // Fallback to normal text search
-      fetchJobs(text, province);
-    }
-  };
 
   // Start Voice Recording
   const startRecording = () => {
@@ -484,7 +441,7 @@ export default function Home() {
             <p className="text-gray-500 text-sm font-medium">Hệ thống phân tích gợi ý việc làm hấp dẫn phù hợp với hồ sơ ứng tuyển của bạn</p>
           </div>
           <button
-            onClick={() => { setSelectedProvince(''); setSearchQuery(''); fetchJobs('', ''); }}
+            onClick={() => { navigate('/jobs'); }}
             className="text-emerald-700 hover:text-emerald-800 font-bold text-sm hover:underline"
           >
             Xem tất cả việc làm tốt nhất &gt;
@@ -763,7 +720,7 @@ export default function Home() {
       {/* 6. HOTLINE & ASSISTANCE SECTION */}
       <section className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 border-l-4 border-l-emerald-600 text-left">
         <div className="space-y-3">
-          <h3 className="text-xl font-black text-gray-900">Tìm việc khó đã có JobMatch đồng hành!</h3>
+          <h3 className="text-xl font-black text-gray-900">Tìm việc khó đã có JobAccess đồng hành!</h3>
           <p className="text-gray-500 text-sm leading-relaxed max-w-2xl">
             Đội ngũ hỗ trợ ứng viên luôn sẵn sàng giải đáp thắc mắc, trợ giúp các vấn đề kỹ thuật và tư vấn chỉnh sửa hồ sơ CV miễn phí cho người dùng khiếm thị / khuyết tật.
           </p>
