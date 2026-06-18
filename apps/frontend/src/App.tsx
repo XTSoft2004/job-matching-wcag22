@@ -16,6 +16,16 @@ import EmployerJobs from './pages/EmployerJobs';
 import EmployerApplicants from './pages/EmployerApplicants';
 import CandidateApplied from './pages/CandidateApplied';
 
+// Custom pages built inside note directory
+import GrossToNet from './pages/note/GrossToNet';
+import CvBuilder from './pages/note/CvBuilder';
+import CareerHandbook from './pages/note/CareerHandbook';
+import CandidateSearch from './pages/note/CandidateSearch';
+import AiHrSolutions from './pages/note/AiHrSolutions';
+import TermsAndPolicies from './pages/note/TermsAndPolicies';
+import WcagReport from './pages/note/WcagReport';
+import EmployerBadge from './pages/note/EmployerBadge';
+
 function App() {
   return (
     <AuthProvider>
@@ -36,6 +46,16 @@ function App() {
             <Route path="/employer/jobs" element={<EmployerJobs />} />
             <Route path="/employer/applicants" element={<EmployerApplicants />} />
             <Route path="/candidate/applied" element={<CandidateApplied />} />
+            
+            {/* Custom page routes */}
+            <Route path="/cv-builder" element={<CvBuilder />} />
+            <Route path="/gross-to-net" element={<GrossToNet />} />
+            <Route path="/career-handbook" element={<CareerHandbook />} />
+            <Route path="/candidate-search" element={<CandidateSearch />} />
+            <Route path="/ai-hr-solutions" element={<AiHrSolutions />} />
+            <Route path="/terms-and-policies" element={<TermsAndPolicies />} />
+            <Route path="/wcag-report" element={<WcagReport />} />
+            <Route path="/employer-badge" element={<EmployerBadge />} />
           </Route>
         </Routes>
       </Router>

@@ -788,7 +788,7 @@ export default function Home() {
             </span>
             <span className="flex items-center gap-1">
               <MapPin className="h-4 w-4 text-emerald-600" />
-              <span>Văn phòng chính: Cầu Giấy, Hà Nội</span>
+              <span>Văn phòng chính: 77 Nguyễn Huệ, Thuận Hóa, Huế</span>
             </span>
           </div>
         </div>
@@ -798,7 +798,7 @@ export default function Home() {
             className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl transition-colors text-center text-base focus:outline-none focus:ring-4 focus:ring-emerald-200 flex items-center justify-center gap-2"
           >
             <Phone className="h-5 w-5" />
-            <span>GỌI HỖ TRỢ: 1900 068 889</span>
+            <span>GỌI HỖ TRỢ: 1900 xxx xxx</span>
           </a>
         </div>
       </section>

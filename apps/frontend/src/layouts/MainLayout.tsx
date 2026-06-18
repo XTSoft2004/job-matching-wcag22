@@ -47,14 +47,14 @@ export default function MainLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50/50">
       {/* Skip Link */}
-      <a 
-        href="#main-content" 
+      <a
+        href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl z-[100] shadow-md focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
       >
         Chuyển nhanh đến nội dung chính
       </a>
       {/* Top green announcement banner - role="complementary" vì thông tin bổ sung */}
-      <div 
+      <div
         className="bg-primary-950 text-primary-100 py-2 px-4 text-center text-xs font-semibold tracking-wide sm:text-sm border-b border-primary-900 shadow-sm relative z-50"
         role="complementary"
         aria-label="Thông báo tiếp cận"
@@ -67,8 +67,8 @@ export default function MainLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex-shrink-0 flex items-center">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="flex items-center gap-2 text-2xl font-black transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-200 rounded-md px-2 py-1"
                 aria-label="JobAccess Home"
               >
@@ -78,33 +78,33 @@ export default function MainLayout() {
             </div>
 
             <nav className="hidden md:flex space-x-4 items-center" aria-label="Điều hướng chính">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className={`flex items-center gap-1.5 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive('/') ? 'text-primary-700 bg-primary-50' : 'text-gray-600 hover:text-primary-700'}`}
                 aria-current={isActive('/') ? 'page' : undefined}
               >
                 <Search className="w-4 h-4" aria-hidden="true" />
                 Tìm việc làm
               </Link>
-              
+
               {user?.role === 'Nhà tuyển dụng' && (
                 <>
-                  <Link 
-                    to="/employer/jobs" 
+                  <Link
+                    to="/employer/jobs"
                     className={`flex items-center gap-1.5 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive('/employer/jobs') ? 'text-primary-700 bg-primary-50' : 'text-gray-600 hover:text-primary-700'}`}
                     aria-current={isActive('/employer/jobs') ? 'page' : undefined}
                   >
                     Tin đã đăng
                   </Link>
-                  <Link 
-                    to="/employer/applicants" 
+                  <Link
+                    to="/employer/applicants"
                     className={`flex items-center gap-1.5 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive('/employer/applicants') ? 'text-primary-700 bg-primary-50' : 'text-gray-600 hover:text-primary-700'}`}
                     aria-current={isActive('/employer/applicants') ? 'page' : undefined}
                   >
                     Quản lý ứng viên
                   </Link>
-                  <Link 
-                    to="/dang-tin" 
+                  <Link
+                    to="/dang-tin"
                     className={`flex items-center gap-1.5 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive('/dang-tin') ? 'text-primary-700 bg-primary-50' : 'text-gray-600 hover:text-primary-700'}`}
                     aria-current={isActive('/dang-tin') ? 'page' : undefined}
                   >
@@ -115,8 +115,8 @@ export default function MainLayout() {
               )}
 
               {user?.role === 'Ứng viên' && (
-                <Link 
-                  to="/candidate/applied" 
+                <Link
+                  to="/candidate/applied"
                   className={`flex items-center gap-1.5 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive('/candidate/applied') ? 'text-primary-700 bg-primary-50' : 'text-gray-600 hover:text-primary-700'}`}
                   aria-current={isActive('/candidate/applied') ? 'page' : undefined}
                 >
@@ -126,22 +126,22 @@ export default function MainLayout() {
 
               {user?.role === 'Quản trị viên' && (
                 <>
-                  <Link 
-                    to="/admin/dashboard" 
+                  <Link
+                    to="/admin/dashboard"
                     className={`flex items-center gap-1.5 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive('/admin/dashboard') ? 'text-primary-700 bg-primary-50' : 'text-gray-600 hover:text-primary-700'}`}
                     aria-current={isActive('/admin/dashboard') ? 'page' : undefined}
                   >
                     Thống kê
                   </Link>
-                  <Link 
-                    to="/admin/users" 
+                  <Link
+                    to="/admin/users"
                     className={`flex items-center gap-1.5 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive('/admin/users') ? 'text-primary-700 bg-primary-50' : 'text-gray-600 hover:text-primary-700'}`}
                     aria-current={isActive('/admin/users') ? 'page' : undefined}
                   >
                     Quản lý User
                   </Link>
-                  <Link 
-                    to="/admin/jobs" 
+                  <Link
+                    to="/admin/jobs"
                     className={`flex items-center gap-1.5 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive('/admin/jobs') ? 'text-primary-700 bg-primary-50' : 'text-gray-600 hover:text-primary-700'}`}
                     aria-current={isActive('/admin/jobs') ? 'page' : undefined}
                   >
@@ -170,7 +170,7 @@ export default function MainLayout() {
               ) : user ? (
                 <div className="flex items-center gap-4">
                   {/* User Profile Link */}
-                  <Link 
+                  <Link
                     to="/profile"
                     className="flex items-center gap-2 text-gray-700 hover:text-primary-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg p-1 shrink-0"
                     aria-label={user.role === 'Nhà tuyển dụng' ? 'Xem trang hồ sơ doanh nghiệp' : 'Xem trang hồ sơ cá nhân'}
@@ -188,10 +188,10 @@ export default function MainLayout() {
                       {user.fullName}
                     </span>
                   </Link>
-                  
+
                   {/* Log Out Button */}
-                  <button 
-                    onClick={handleLogout} 
+                  <button
+                    onClick={handleLogout}
                     className="flex items-center gap-1.5 text-gray-500 hover:text-red-600 font-medium text-sm py-2 px-3 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     aria-label="Đăng xuất khỏi hệ thống"
                   >
@@ -201,8 +201,8 @@ export default function MainLayout() {
                 </div>
               ) : (
                 <>
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     className="text-gray-600 hover:text-gray-900 font-semibold px-4 py-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                   >
                     Đăng nhập
@@ -284,8 +284,8 @@ export default function MainLayout() {
                 Nền tảng tìm kiếm việc làm bằng giọng nói thông minh hỗ trợ người khuyết tật đầu tiên tại Việt Nam. Đáp ứng tiêu chuẩn tiếp cận WCAG 2.2.
               </p>
               <div className="text-sm space-y-2 text-gray-400">
-                <p>📍 Địa chỉ: Cầu Giấy, Hà Nội</p>
-                <p>📞 Hotline: 1900 068 889 (Nhánh 2)</p>
+                <p>📍 Địa chỉ: 77 Nguyễn Huệ, Thuận Hóa, Huế</p>
+                <p>📞 Hotline: 1900 xxx xxx (Nhánh 2)</p>
                 <p>✉️ Email: hotro@jobmatch.vn</p>
               </div>
             </div>
@@ -294,10 +294,10 @@ export default function MainLayout() {
             <div>
               <h3 className="text-white font-bold text-base mb-4">Dành Cho Ứng Viên</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Tìm kiếm việc làm</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Viết CV chuyên nghiệp</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Tính lương Gross to Net</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Cẩm nang nghề nghiệp</Link></li>
+                <li><Link to="/jobs" className="hover:text-primary-400 transition-colors">Tìm kiếm việc làm</Link></li>
+                <li><Link to="/cv-builder" className="hover:text-primary-400 transition-colors">Viết CV chuyên nghiệp</Link></li>
+                <li><Link to="/gross-to-net" className="hover:text-primary-400 transition-colors">Tính lương Gross to Net</Link></li>
+                <li><Link to="/career-handbook" className="hover:text-primary-400 transition-colors">Cẩm nang nghề nghiệp</Link></li>
               </ul>
             </div>
 
@@ -306,9 +306,9 @@ export default function MainLayout() {
               <h3 className="text-white font-bold text-base mb-4">Dành Cho Nhà Tuyển Dụng</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to="/dang-tin" className="hover:text-primary-400 transition-colors">Đăng tin tuyển dụng</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Tìm kiếm hồ sơ ứng viên</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Giải pháp nhân sự AI</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Huy hiệu nhà tuyển dụng uy tín</Link></li>
+                <li><Link to="/candidate-search" className="hover:text-primary-400 transition-colors">Tìm kiếm hồ sơ ứng viên</Link></li>
+                <li><Link to="/ai-hr-solutions" className="hover:text-primary-400 transition-colors">Giải pháp nhân sự AI</Link></li>
+                <li><Link to="/employer-badge" className="hover:text-primary-400 transition-colors">Huy hiệu nhà tuyển dụng uy tín</Link></li>
               </ul>
             </div>
 
@@ -316,10 +316,10 @@ export default function MainLayout() {
             <div>
               <h3 className="text-white font-bold text-base mb-4">Điều Khoản & Chính Sách</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Điều khoản dịch vụ</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Chính sách bảo mật</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Quy chế hoạt động</Link></li>
-                <li><Link to="/" className="hover:text-primary-400 transition-colors">Báo cáo WCAG 2.2 AA</Link></li>
+                <li><Link to="/terms-and-policies" className="hover:text-primary-400 transition-colors">Điều khoản dịch vụ</Link></li>
+                <li><Link to="/terms-and-policies" className="hover:text-primary-400 transition-colors">Chính sách bảo mật</Link></li>
+                <li><Link to="/terms-and-policies" className="hover:text-primary-400 transition-colors">Quy chế hoạt động</Link></li>
+                <li><Link to="/wcag-report" className="hover:text-primary-400 transition-colors">Báo cáo WCAG 2.2 AA</Link></li>
               </ul>
             </div>
           </div>
