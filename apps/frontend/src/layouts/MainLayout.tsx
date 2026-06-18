@@ -37,119 +37,95 @@ export default function MainLayout() {
     return localStorage.getItem('webReaderRate') || '1.0';
   });
   const [showAccessibilityPanel, setShowAccessibilityPanel] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-
-  // References to bypass stale closures in event listeners
   const webReaderRateRef = useRef(webReaderRate);
-  const selectedVoiceRef = useRef(selectedVoice);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playbackIdRef = useRef<number>(0);
 
   useEffect(() => {
     webReaderRateRef.current = webReaderRate;
   }, [webReaderRate]);
 
   useEffect(() => {
-    selectedVoiceRef.current = selectedVoice;
-  }, [selectedVoice]);
-
-  // Hook to load Vietnamese voice dynamically
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-
-    const loadVoices = () => {
-      const voices = window.speechSynthesis.getVoices();
-
-      // Filter all Vietnamese voices
-      const viVoices = voices.filter(v =>
-        v.lang.toLowerCase().includes('vi') ||
-        v.lang.toLowerCase().includes('vn') ||
-        v.name.toLowerCase().includes('vietnam') ||
-        v.name.toLowerCase().includes('vietnamese')
-      );
-
-      // Sort to prioritize Microsoft Edge Natural/Online voices, then Google, then offline
-      const sortedViVoices = [...viVoices].sort((a, b) => {
-        const getPriority = (v: SpeechSynthesisVoice) => {
-          const name = v.name.toLowerCase();
-          if (name.includes('natural') || name.includes('online')) {
-            if (name.includes('microsoft') || name.includes('edge')) return 4;
-            return 3;
-          }
-          if (name.includes('google')) return 2;
-          return 1;
-        };
-        return getPriority(b) - getPriority(a);
-      });
-
-      setAvailableVoices(sortedViVoices);
-
-      // Try to load user preferred voice from localStorage
-      const preferredName = localStorage.getItem('preferredVoiceName');
-      let defaultVoice = sortedViVoices[0] || null;
-      if (preferredName) {
-        const found = sortedViVoices.find(v => v.name === preferredName);
-        if (found) {
-          defaultVoice = found;
-        }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
-
-      console.log('Vietnamese voices found & sorted:', sortedViVoices.map(v => `${v.name} (${v.lang})`));
-      console.log('Selected Vietnamese voice:', defaultVoice ? `${defaultVoice.name} (${defaultVoice.lang})` : 'None');
-
-      if (defaultVoice) {
-        setSelectedVoice(defaultVoice);
-        selectedVoiceRef.current = defaultVoice;
-      }
+      playbackIdRef.current += 1;
     };
-
-    loadVoices();
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
   }, []);
 
-  const handleVoiceChange = (voiceName: string) => {
-    const found = availableVoices.find(v => v.name === voiceName);
-    if (found) {
-      setSelectedVoice(found);
-      selectedVoiceRef.current = found;
-      localStorage.setItem('preferredVoiceName', found.name);
-      
-      // Speak visual confirmation
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance('Đã chuyển giọng đọc thành công');
-        utterance.lang = 'vi-VN';
-        utterance.voice = found;
-        utterance.rate = parseFloat(webReaderRateRef.current);
-        window.speechSynthesis.speak(utterance);
-      }
-    }
-  };
-
   const speak = (text: string) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'vi-VN';
-      if (selectedVoiceRef.current) {
-        utterance.voice = selectedVoiceRef.current;
-      }
-      window.speechSynthesis.speak(utterance);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
+
+    playbackIdRef.current += 1;
+    const currentPlaybackId = playbackIdRef.current;
+
+    const chunks: string[] = [];
+    const maxLen = 200;
+    let remainingText = text;
+    while (remainingText.length > 0) {
+      if (remainingText.length <= maxLen) {
+        chunks.push(remainingText);
+        break;
+      }
+      let splitIdx = remainingText.lastIndexOf('. ', maxLen);
+      if (splitIdx <= 0) {
+        splitIdx = remainingText.lastIndexOf(', ', maxLen);
+      }
+      if (splitIdx <= 0) {
+        splitIdx = remainingText.lastIndexOf(' ', maxLen);
+      }
+      if (splitIdx <= 0) {
+        splitIdx = maxLen;
+      }
+      const chunk = remainingText.substring(0, splitIdx).trim();
+      if (chunk) {
+        chunks.push(chunk);
+      }
+      remainingText = remainingText.substring(splitIdx).trim();
+    }
+
+    if (chunks.length === 0) return;
+
+    let currentChunkIndex = 0;
+
+    const playNext = () => {
+      if (playbackIdRef.current !== currentPlaybackId) return;
+
+      if (currentChunkIndex >= chunks.length) {
+        audioRef.current = null;
+        return;
+      }
+
+      const chunkText = chunks[currentChunkIndex];
+      const url = `http://localhost:3000/api/v1/tts?q=${encodeURIComponent(chunkText)}`;
+      const audio = new Audio();
+      (audio as any).referrerPolicy = 'no-referrer';
+      audio.src = url;
+      audio.playbackRate = parseFloat(webReaderRateRef.current);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        if (playbackIdRef.current === currentPlaybackId) {
+          currentChunkIndex++;
+          playNext();
+        }
+      };
+
+      audio.play().catch((err) => {
+        console.error('TTS Playback error:', err);
+      });
+    };
+
+    playNext();
   };
 
   const speakText = (text: string) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'vi-VN';
-      if (selectedVoiceRef.current) {
-        utterance.voice = selectedVoiceRef.current;
-      }
-      utterance.rate = parseFloat(webReaderRateRef.current);
-      window.speechSynthesis.speak(utterance);
-    }
+    speak(text);
   };
 
   const toggleWebReader = () => {
@@ -160,7 +136,14 @@ export default function MainLayout() {
           speakText('Trình đọc màn hình tích hợp đã bật. Nhấn phím Tab để di chuyển và nghe đọc.');
         }, 100);
       } else {
-        window.speechSynthesis.cancel();
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+        playbackIdRef.current += 1;
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
       }
       return next;
     });
@@ -314,21 +297,16 @@ export default function MainLayout() {
       matchedCmd = commands.find(cmd => cmd.keywords.some(kw => queryForNav === kw));
     }
 
-    // 3. If matched a navigation command, execute navigation
     if (matchedCmd) {
       const msg = `Đang di chuyển đến trang ${matchedCmd.name}`;
       setVoiceFeedback(msg);
-      speak(msg);
-      setTimeout(() => {
-        navigate(matchedCmd!.path);
-        setShowVoiceModal(false);
-      }, 1200);
+      navigate(matchedCmd.path);
+      setShowVoiceModal(false);
       return;
     }
 
-    // 4. If not matched, check search intent prefix (e.g. "tìm việc kế toán")
     const searchPrefixes = [
-      'tìm kiếm việc làm', 'tìm kiếm công việc', 'tìm việc làm', 'tìm công việc', 
+      'tìm kiếm việc làm', 'tìm kiếm công việc', 'tìm việc làm', 'tìm công việc',
       'tìm việc', 'việc làm', 'công việc', 'tìm kiếm', 'tìm'
     ];
 
@@ -346,22 +324,15 @@ export default function MainLayout() {
     if (isSearchIntent && extractedSearchTerm) {
       const msg = `Đang tìm kiếm việc làm cho từ khóa: "${extractedSearchTerm}"`;
       setVoiceFeedback(msg);
-      speak(msg);
-      setTimeout(() => {
-        navigate(`/jobs?q=${encodeURIComponent(extractedSearchTerm)}`);
-        setShowVoiceModal(false);
-      }, 1200);
+      navigate(`/jobs?q=${encodeURIComponent(extractedSearchTerm)}`);
+      setShowVoiceModal(false);
       return;
     }
 
-    // 5. Fallback: treat the entire query as a job search keyword
     const msg = `Đang tìm kiếm việc làm cho từ khóa: "${cleanedText}"`;
     setVoiceFeedback(msg);
-    speak(msg);
-    setTimeout(() => {
-      navigate(`/jobs?q=${encodeURIComponent(cleanedText)}`);
-      setShowVoiceModal(false);
-    }, 1200);
+    navigate(`/jobs?q=${encodeURIComponent(cleanedText)}`);
+    setShowVoiceModal(false);
   };
 
   const startVoiceAssistant = () => {
@@ -468,8 +439,8 @@ export default function MainLayout() {
         // Reset text if it's stuck in processing states
         setVoiceText(currentText => {
           if (
-            currentText === 'Đang phân tích câu lệnh...' || 
-            currentText === 'Chuẩn bị phân tích...' || 
+            currentText === 'Đang phân tích câu lệnh...' ||
+            currentText === 'Chuẩn bị phân tích...' ||
             currentText.startsWith('Đang nghe...')
           ) {
             return 'Không nhận diện được âm thanh. Hãy thử lại.';
@@ -528,7 +499,7 @@ export default function MainLayout() {
       if (e.key === ' ') {
         if (isSpacePressedRef.current) {
           isSpacePressedRef.current = false;
-          
+
           if (keyUpTimeoutRef.current) {
             clearTimeout(keyUpTimeoutRef.current);
           }
@@ -1047,36 +1018,12 @@ export default function MainLayout() {
 
             {webReaderEnabled && (
               <>
-                {/* Voice Selector */}
                 <div className="space-y-1">
-                  <label htmlFor="accessibility-voice-select" className="block text-xs font-bold text-gray-700">Giọng đọc tiếng Việt:</label>
-                  {availableVoices.length > 0 ? (
-                    <select
-                      id="accessibility-voice-select"
-                      value={selectedVoice?.name || ''}
-                      onChange={(e) => handleVoiceChange(e.target.value)}
-                      className="w-full bg-white border border-gray-300 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500 outline-none cursor-pointer"
-                    >
-                      {availableVoices.map((voice) => (
-                        <option key={voice.name} value={voice.name}>
-                          {voice.name.replace(/Microsoft|Online|Natural|Vietnamese|Vietnam/gi, '').replace(/\(|\)/g, '').trim() || voice.name} {voice.name.toLowerCase().includes('natural') ? '🇻🇳 (Tự nhiên)' : '🇻🇳'}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5 font-medium leading-relaxed">
-                      {selectedVoice ? (
-                        <span className="flex items-center gap-1">
-                          <span>🇻🇳</span>
-                          <span>Giọng đọc: <strong>{selectedVoice.name}</strong></span>
-                        </span>
-                      ) : (
-                        <span className="text-amber-805 font-bold">
-                          🔊 Đang tìm kiếm giọng tiếng Việt chuẩn...
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  <label className="block text-xs font-bold text-gray-700">Giọng đọc tiếng Việt:</label>
+                  <div className="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 select-none">
+                    <span>🇻🇳</span>
+                    <span>Google Translate (Giọng đọc chuẩn)</span>
+                  </div>
                 </div>
 
                 {/* Mode Selector */}
