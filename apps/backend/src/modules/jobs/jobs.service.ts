@@ -124,6 +124,10 @@ export class JobsService extends BaseService {
       .leftJoinAndSelect('job.company', 'company')
       .leftJoinAndSelect('job.skills', 'skills');
 
+    if (query.employerId) {
+      queryBuilder.andWhere('job.employerId = :employerId', { employerId: query.employerId });
+    }
+
     if (idsStr) {
       const ids = idsStr
         .split(',')

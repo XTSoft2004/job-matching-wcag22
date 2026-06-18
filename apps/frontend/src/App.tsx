@@ -7,6 +7,12 @@ import CreateJob from './pages/CreateJob';
 import JobDetails from './pages/JobDetails';
 import { AuthProvider } from './contexts/AuthContext';
 import Profile from './pages/Profile';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminJobs from './pages/AdminJobs';
+import EmployerJobs from './pages/EmployerJobs';
+import EmployerApplicants from './pages/EmployerApplicants';
+import CandidateApplied from './pages/CandidateApplied';
 
 function App() {
   return (
@@ -17,9 +23,15 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/create-job" element={<CreateJob />} />
+            <Route path="/dang-tin" element={<CreateJob />} />
             <Route path="/jobs/:id" element={<JobDetails />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/jobs" element={<AdminJobs />} />
+            <Route path="/employer/jobs" element={<EmployerJobs />} />
+            <Route path="/employer/applicants" element={<EmployerApplicants />} />
+            <Route path="/candidate/applied" element={<CandidateApplied />} />
           </Route>
         </Routes>
       </Router>

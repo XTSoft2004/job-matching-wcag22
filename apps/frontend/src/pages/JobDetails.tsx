@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { notification } from 'antd';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -66,6 +67,16 @@ export default function JobDetails() {
   const [isApplied, setIsApplied] = useState(false);
   const [applying, setApplying] = useState(false);
 
+  // Application Form States
+  const [profileId, setProfileId] = useState<number | null>(null);
+  const [cvList, setCvList] = useState<any[]>([]);
+  const [selectedCvId, setSelectedCvId] = useState<number | null>(null);
+  const [isNewCv, setIsNewCv] = useState(false);
+  const [newCvUrl, setNewCvUrl] = useState('');
+  const [newCvDesc, setNewCvDesc] = useState('');
+  const [coverLetter, setCoverLetter] = useState('');
+  const [modalLoading, setModalLoading] = useState(false);
+
   // Fetch job details
   useEffect(() => {
     const fetchJob = async () => {
@@ -87,18 +98,149 @@ export default function JobDetails() {
     fetchJob();
   }, [id]);
 
-  // Handle Application Submit
-  const handleApplyConfirm = async () => {
+  // Check if candidate has already applied
+  useEffect(() => {
+    const checkAppliedStatus = async () => {
+      if (user && user.role === 'Ứng viên' && id) {
+        try {
+          const res: any = await api.get('/applications?limit=100');
+          const apps = res.data?.data || res.data || [];
+          const hasApplied = apps.some((app: any) => app.jobId === Number(id));
+          setIsApplied(hasApplied);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    checkAppliedStatus();
+  }, [user, id]);
+
+  // Handle Opening Apply Modal
+  const handleOpenApplyModal = async () => {
     if (!user) {
-      navigate('/login');
+      notification.warning({
+        message: 'Yêu cầu đăng nhập',
+        description: 'Vui lòng đăng nhập với tài khoản Ứng viên để nộp hồ sơ ứng tuyển.'
+      });
+      navigate('/login', { state: { from: `/jobs/${id}` } });
       return;
     }
+    
+    if (user.role !== 'Ứng viên') {
+      notification.error({
+        message: 'Quyền truy cập hạn chế',
+        description: 'Chỉ tài khoản vai trò Ứng viên mới có thể nộp hồ sơ ứng tuyển cho công việc này.'
+      });
+      return;
+    }
+
+    setIsApplyModalOpen(true);
+    setModalLoading(true);
+    try {
+      // Fetch profile (automatically initialized by backend if not exist)
+      const profileRes: any = await api.get(`/candidate-profiles/user/${user.id}`);
+      const profileData = profileRes.data?.data || profileRes.data || null;
+      if (!profileData) {
+        throw new Error('Không tìm thấy thông tin hồ sơ của bạn.');
+      }
+      setProfileId(profileData.id);
+      
+      // Fetch CVs list
+      const cvsRes: any = await api.get(`/candidate-cvs/profile/${profileData.id}`);
+      const cvs = cvsRes.data?.data || cvsRes.data || [];
+      setCvList(cvs);
+      
+      if (cvs.length > 0) {
+        setSelectedCvId(cvs[0].id);
+        setIsNewCv(false);
+      } else {
+        setIsNewCv(true);
+      }
+    } catch (err: any) {
+      console.error(err);
+      notification.error({
+        message: 'Lỗi tải hồ sơ',
+        description: err.response?.data?.message || 'Có lỗi xảy ra khi tải hồ sơ ứng tuyển.'
+      });
+      setIsApplyModalOpen(false);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Handle Application Submit
+  const handleApplyConfirm = async () => {
+    if (!user || !profileId) return;
+    
     setApplying(true);
-    // Simulate API delay for apply submission
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    setApplying(false);
-    setIsApplyModalOpen(false);
-    setIsApplied(true);
+    try {
+      let cvIdToSubmit = selectedCvId;
+      
+      // Create CV inline if selected new CV
+      if (isNewCv) {
+        if (!newCvUrl.trim()) {
+          notification.error({
+            message: 'Thiếu liên kết CV',
+            description: 'Vui lòng nhập đường dẫn liên kết đến file CV của bạn.'
+          });
+          setApplying(false);
+          return;
+        }
+        
+        // Add new CV
+        await api.post('/candidate-cvs', {
+          profileId: profileId,
+          cvUrl: newCvUrl,
+          description: newCvDesc || `CV nộp cho vị trí ${job?.title}`
+        });
+        
+        // Fetch CVs list again to get the newly created CV's ID (at index 0)
+        const cvsRes: any = await api.get(`/candidate-cvs/profile/${profileId}`);
+        const cvs = cvsRes.data?.data || cvsRes.data || [];
+        if (cvs.length === 0) {
+          throw new Error('Không thể đồng bộ CV vừa tải lên.');
+        }
+        cvIdToSubmit = cvs[0].id;
+      }
+      
+      if (!cvIdToSubmit) {
+        notification.error({
+          message: 'Thiếu thông tin CV',
+          description: 'Vui lòng chọn hoặc tải lên một bản CV để ứng tuyển.'
+        });
+        setApplying(false);
+        return;
+      }
+
+      // Submit application to DB
+      await api.post('/applications', {
+        jobId: Number(id),
+        profileId: profileId,
+        candidateCvId: cvIdToSubmit,
+        coverLetter: coverLetter
+      });
+
+      notification.success({
+        message: 'Ứng tuyển thành công!',
+        description: `Hồ sơ của bạn đã được gửi trực tiếp đến nhà tuyển dụng cho vị trí "${job?.title}".`
+      });
+      
+      setIsApplied(true);
+      setIsApplyModalOpen(false);
+      
+      // Reset form fields
+      setNewCvUrl('');
+      setNewCvDesc('');
+      setCoverLetter('');
+    } catch (err: any) {
+      console.error(err);
+      notification.error({
+        message: 'Nộp đơn thất bại',
+        description: err.response?.data?.message || 'Có lỗi xảy ra khi ứng tuyển.'
+      });
+    } finally {
+      setApplying(false);
+    }
   };
 
   // Helper to format salary
@@ -273,7 +415,7 @@ export default function JobDetails() {
               </div>
             ) : (
               <button
-                onClick={() => setIsApplyModalOpen(true)}
+                onClick={handleOpenApplyModal}
                 className="btn-primary w-full py-3.5 text-base shadow-lg shadow-primary-100 flex items-center justify-center gap-2 focus-visible:ring-4 focus-visible:ring-primary-200"
               >
                 <span>Ứng tuyển ngay</span>
@@ -365,7 +507,7 @@ export default function JobDetails() {
           aria-labelledby="modal-title"
         >
           {/* Modal box */}
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-2xl max-w-md w-full p-6 relative overflow-hidden animate-slide-up">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-2xl max-w-lg w-full p-6 relative overflow-hidden animate-slide-up text-left">
             
             {/* Close button */}
             <button
@@ -376,53 +518,157 @@ export default function JobDetails() {
               <X className="w-5 h-5" />
             </button>
 
-            <div className="text-center space-y-4 pt-2">
-              <div className="mx-auto h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 shadow-inner">
-                <Briefcase className="h-6 w-6" aria-hidden="true" />
+            {modalLoading ? (
+              <div className="py-12 text-center space-y-4">
+                <div className="h-10 w-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p className="text-gray-500 font-semibold text-sm">Đang tải hồ sơ ứng tuyển của bạn...</p>
               </div>
-              
-              <h3 id="modal-title" className="text-xl font-bold text-gray-900">
-                Xác nhận ứng tuyển
-              </h3>
-              
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Bạn đang ứng tuyển cho công việc:<br />
-                <strong className="text-gray-900 font-bold block mt-1 text-base">{job.title}</strong>
-                tại <span className="font-semibold text-gray-800">{job.company?.name}</span>.
-              </p>
-
-              {user ? (
-                <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100 text-left space-y-1 text-xs text-gray-600">
-                  <p><strong>Người ứng tuyển:</strong> {user.fullName}</p>
-                  <p><strong>Email:</strong> {user.email}</p>
-                  {user.phone && <p><strong>Số điện thoại:</strong> {user.phone}</p>}
+            ) : (
+              <div className="space-y-5">
+                <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
+                  <div className="h-10 w-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-700 shrink-0">
+                    <Briefcase className="h-5.5 w-5.5" />
+                  </div>
+                  <div>
+                    <h3 id="modal-title" className="text-lg font-black text-gray-900 leading-tight">
+                      Ứng tuyển công việc
+                    </h3>
+                    <p className="text-gray-500 text-xs mt-0.5 truncate max-w-sm font-semibold">{job.title}</p>
+                  </div>
                 </div>
-              ) : null}
 
-              <div className="pt-4 flex items-center gap-3">
-                <button
-                  onClick={() => setIsApplyModalOpen(false)}
-                  className="btn-secondary flex-1 py-2.5"
-                  disabled={applying}
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  onClick={handleApplyConfirm}
-                  className="btn-primary flex-1 py-2.5 flex justify-center items-center gap-1.5"
-                  disabled={applying}
-                >
-                  {applying ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Đang gửi...</span>
-                    </>
-                  ) : (
-                    <span>Xác nhận</span>
+                {/* Candidate Summary */}
+                {user && (
+                  <div className="p-3.5 bg-gray-50 rounded-2xl border border-gray-150 space-y-1.5 text-xs text-gray-600 font-semibold">
+                    <p className="text-gray-900 font-bold text-sm mb-1">Thông tin liên hệ ứng tuyển</p>
+                    <p>Ứng viên: <span className="text-gray-800 font-bold">{user.fullName}</span></p>
+                    <p>Email: <span className="text-gray-800 font-bold">{user.email}</span></p>
+                    {user.phone && <p>Số điện thoại: <span className="text-gray-800 font-bold">{user.phone}</span></p>}
+                  </div>
+                )}
+
+                {/* CV Selection / Creation Section */}
+                <div className="space-y-3.5">
+                  <div>
+                    <label className="label-text block mb-1">Chọn CV ứng tuyển <span className="text-red-500">*</span></label>
+                    {cvList.length > 0 ? (
+                      <div className="space-y-3">
+                        <select
+                          value={isNewCv ? 'new' : (selectedCvId || '')}
+                          onChange={(e) => {
+                            if (e.target.value === 'new') {
+                              setIsNewCv(true);
+                            } else {
+                              setIsNewCv(false);
+                              setSelectedCvId(Number(e.target.value));
+                            }
+                          }}
+                          className="input-field text-sm"
+                        >
+                          {cvList.map(cv => (
+                            <option key={cv.id} value={cv.id}>
+                              📄 {cv.description || `CV file (${cv.cvUrl.split('/').pop() || 'Liên kết'})`}
+                            </option>
+                          ))}
+                          <option value="new">➕ Nộp bằng link CV mới...</option>
+                        </select>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-2xl text-xs text-amber-800 flex items-start gap-2 font-medium mb-2">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>Bạn chưa tải lên CV nào. Vui lòng nhập link CV của bạn bên dưới để tiếp tục ứng tuyển.</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Inline upload fields if chosen New CV */}
+                  {(isNewCv || cvList.length === 0) && (
+                    <div className="p-4 bg-gray-50/50 border border-gray-200 rounded-2xl space-y-3 animate-fade-in">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Nhập thông tin CV mới</span>
+                        {cvList.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setIsNewCv(false)}
+                            className="text-primary-700 hover:text-primary-850 font-bold text-xs"
+                          >
+                            Quay lại chọn CV cũ
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="newCvUrl" className="text-xs text-gray-500 font-bold block mb-1">
+                          Đường dẫn tệp CV (Google Drive, Dropbox, PDF URL...) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="newCvUrl"
+                          type="url"
+                          required
+                          placeholder="Ví dụ: https://drive.google.com/file/d/123..."
+                          className="input-field text-xs py-2 px-3"
+                          value={newCvUrl}
+                          onChange={(e) => setNewCvUrl(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="newCvDesc" className="text-xs text-gray-500 font-bold block mb-1">
+                          Tên gọi CV / Mô tả ngắn
+                        </label>
+                        <input
+                          id="newCvDesc"
+                          type="text"
+                          placeholder="Ví dụ: CV tiếng Anh - React Developer"
+                          className="input-field text-xs py-2 px-3"
+                          value={newCvDesc}
+                          onChange={(e) => setNewCvDesc(e.target.value)}
+                        />
+                      </div>
+                    </div>
                   )}
-                </button>
+                </div>
+
+                {/* Cover letter field */}
+                <div>
+                  <label htmlFor="coverLetter" className="label-text block mb-1">Thư giới thiệu (Cover Letter)</label>
+                  <p className="text-gray-400 text-[10px] mb-1 font-semibold">Gợi ý: Nhập lời giới thiệu ngắn gọn, súc tích giúp bạn nổi bật hơn trong mắt nhà tuyển dụng.</p>
+                  <textarea
+                    id="coverLetter"
+                    rows={4}
+                    placeholder="Kính chào nhà tuyển dụng, tôi rất ấn tượng với cơ hội nghề nghiệp này và mong muốn được ứng tuyển. Với kinh nghiệm..."
+                    className="input-field resize-y text-xs"
+                    value={coverLetter}
+                    onChange={(e) => setCoverLetter(e.target.value)}
+                  ></textarea>
+                </div>
+
+                {/* Confirm actions */}
+                <div className="pt-4 flex items-center gap-3 border-t border-gray-100">
+                  <button
+                    onClick={() => setIsApplyModalOpen(false)}
+                    className="flex-1 py-2.5 border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-xs transition-colors text-center"
+                    disabled={applying}
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    onClick={handleApplyConfirm}
+                    className="btn-primary flex-1 py-2.5 flex justify-center items-center gap-1.5 shadow-md shadow-primary-100 text-xs font-bold"
+                    disabled={applying}
+                  >
+                    {applying ? (
+                      <>
+                        <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Đang gửi hồ sơ...</span>
+                      </>
+                    ) : (
+                      <span>Nộp đơn ứng tuyển</span>
+                    )}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
         </div>

@@ -13,6 +13,11 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50/50">
+      {/* Top green announcement banner */}
+      <div className="bg-primary-950 text-primary-100 py-2 px-4 text-center text-xs font-semibold tracking-wide sm:text-sm border-b border-primary-900 shadow-sm relative z-50">
+        ✨ Hệ thống tìm kiếm việc làm thông minh AI & Giọng nói hỗ trợ người khiếm thị / khuyết tật đạt tiêu chuẩn WCAG 2.2
+      </div>
+
       {/* Accessible Navigation Banner */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,14 +25,14 @@ export default function MainLayout() {
             <div className="flex-shrink-0 flex items-center">
               <Link 
                 to="/" 
-                className="text-2xl font-black bg-gradient-to-r from-primary-700 to-blue-600 bg-clip-text text-transparent transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-200 rounded-md px-2 py-1"
+                className="text-2xl font-black bg-gradient-to-r from-primary-700 to-emerald-500 bg-clip-text text-transparent transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-200 rounded-md px-2 py-1"
                 aria-label="JobMatch Home"
               >
                 JobMatch
               </Link>
             </div>
 
-            <nav className="hidden md:flex space-x-6" aria-label="Main Navigation">
+            <nav className="hidden md:flex space-x-4 items-center" aria-label="Main Navigation">
               <Link 
                 to="/" 
                 className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
@@ -35,13 +40,62 @@ export default function MainLayout() {
                 <Search className="w-4 h-4" />
                 Tìm việc làm
               </Link>
-              <Link 
-                to="/create-job" 
-                className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Đăng tin tuyển dụng
-              </Link>
+              
+              {user?.role === 'Nhà tuyển dụng' && (
+                <>
+                  <Link 
+                    to="/employer/jobs" 
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  >
+                    Tin đã đăng
+                  </Link>
+                  <Link 
+                    to="/employer/applicants" 
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  >
+                    Quản lý ứng viên
+                  </Link>
+                  <Link 
+                    to="/dang-tin" 
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Đăng tin
+                  </Link>
+                </>
+              )}
+
+              {user?.role === 'Ứng viên' && (
+                <Link 
+                  to="/candidate/applied" 
+                  className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                >
+                  Việc làm đã nộp
+                </Link>
+              )}
+
+              {user?.role === 'Quản trị viên' && (
+                <>
+                  <Link 
+                    to="/admin/dashboard" 
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  >
+                    Thống kê
+                  </Link>
+                  <Link 
+                    to="/admin/users" 
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  >
+                    Quản lý User
+                  </Link>
+                  <Link 
+                    to="/admin/jobs" 
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-700 font-semibold px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  >
+                    Quản lý Job
+                  </Link>
+                </>
+              )}
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -97,10 +151,66 @@ export default function MainLayout() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 text-center mt-auto border-t border-gray-800">
-        <p className="text-gray-400 text-sm">
-          © {new Date().getFullYear()} JobMatch. All rights reserved. Designed with WCAG 2.2 accessibility in mind.
-        </p>
+      <footer className="bg-gray-900 text-gray-300 mt-auto border-t border-gray-800 font-sans" aria-label="Footer">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12 text-left">
+            {/* Column 1: Info */}
+            <div className="space-y-4">
+              <span className="text-2xl font-black bg-gradient-to-r from-primary-400 to-emerald-400 bg-clip-text text-transparent">
+                JobMatch
+              </span>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Nền tảng tìm kiếm việc làm bằng giọng nói thông minh hỗ trợ người khuyết tật đầu tiên tại Việt Nam. Đáp ứng tiêu chuẩn tiếp cận WCAG 2.2.
+              </p>
+              <div className="text-sm space-y-2 text-gray-400">
+                <p>📍 Địa chỉ: Cầu Giấy, Hà Nội</p>
+                <p>📞 Hotline: 1900 068 889 (Nhánh 2)</p>
+                <p>✉️ Email: hotro@jobmatch.vn</p>
+              </div>
+            </div>
+
+            {/* Column 2: Job Seekers */}
+            <div>
+              <h3 className="text-white font-bold text-base mb-4">Dành Cho Ứng Viên</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Tìm kiếm việc làm</Link></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Viết CV chuyên nghiệp</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Tính lương Gross to Net</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Cẩm nang nghề nghiệp</a></li>
+              </ul>
+            </div>
+
+            {/* Column 3: Employers */}
+            <div>
+              <h3 className="text-white font-bold text-base mb-4">Dành Cho Nhà Tuyển Dụng</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link to="/dang-tin" className="hover:text-primary-400 transition-colors">Đăng tin tuyển dụng</Link></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Tìm kiếm hồ sơ ứng viên</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Giải pháp nhân sự AI</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Huy hiệu nhà tuyển dụng uy tín</a></li>
+              </ul>
+            </div>
+
+            {/* Column 4: Policy & Ecosystem */}
+            <div>
+              <h3 className="text-white font-bold text-base mb-4">Điều Khoản & Chính Sách</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Điều khoản dịch vụ</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Chính sách bảo mật</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Quy chế hoạt động</a></li>
+                <li><a href="#" className="hover:text-primary-400 transition-colors">Báo cáo WCAG 2.2 AA</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-gray-800 text-center flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+            <p>© {new Date().getFullYear()} JobMatch. Tất cả các quyền được bảo lưu.</p>
+            <p className="flex items-center gap-2">
+              <span>Thiết kế theo tiêu chuẩn tiếp cận</span>
+              <span className="px-2 py-0.5 bg-primary-950 text-primary-400 border border-primary-800 rounded text-xs font-semibold">WCAG 2.2 AA</span>
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );

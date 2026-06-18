@@ -38,4 +38,10 @@ export class BasePaginateQuery implements Partial<PaginateQuery> {
   @IsOptional()
   @IsString()
   ids?: string;
+
+  @ApiPropertyOptional({ description: 'ID nhà tuyển dụng', example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  employerId?: number;
 }
