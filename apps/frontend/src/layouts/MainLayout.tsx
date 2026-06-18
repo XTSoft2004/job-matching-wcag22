@@ -22,6 +22,9 @@ export default function MainLayout() {
   const voiceModalRef = useRef<HTMLDivElement>(null);
   const voiceTriggerRef = useRef<HTMLButtonElement>(null);
   const isSpacePressedRef = useRef(false);
+  const isRecognitionActiveRef = useRef(false);
+  const shouldStopOnStartRef = useRef(false);
+  const keyUpTimeoutRef = useRef<any>(null);
 
   // Web Screen Reader states
   const [webReaderEnabled, setWebReaderEnabled] = useState(() => {
@@ -35,6 +38,7 @@ export default function MainLayout() {
   });
   const [showAccessibilityPanel, setShowAccessibilityPanel] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   // References to bypass stale closures in event listeners
   const webReaderRateRef = useRef(webReaderRate);
@@ -55,20 +59,46 @@ export default function MainLayout() {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
 
-      // Look for a Vietnamese voice first (e.g. vi-VN, Google Tiếng Việt, Microsoft Natural)
-      const viVoice = voices.find(v =>
+      // Filter all Vietnamese voices
+      const viVoices = voices.filter(v =>
         v.lang.toLowerCase().includes('vi') ||
         v.lang.toLowerCase().includes('vn') ||
         v.name.toLowerCase().includes('vietnam') ||
         v.name.toLowerCase().includes('vietnamese')
       );
 
-      console.log('Voices loaded:', voices.map(v => `${v.name} (${v.lang})`));
-      console.log('Selected Vietnamese voice:', viVoice ? `${viVoice.name} (${viVoice.lang})` : 'None');
+      // Sort to prioritize Microsoft Edge Natural/Online voices, then Google, then offline
+      const sortedViVoices = [...viVoices].sort((a, b) => {
+        const getPriority = (v: SpeechSynthesisVoice) => {
+          const name = v.name.toLowerCase();
+          if (name.includes('natural') || name.includes('online')) {
+            if (name.includes('microsoft') || name.includes('edge')) return 4;
+            return 3;
+          }
+          if (name.includes('google')) return 2;
+          return 1;
+        };
+        return getPriority(b) - getPriority(a);
+      });
 
-      if (viVoice) {
-        setSelectedVoice(viVoice);
-        selectedVoiceRef.current = viVoice;
+      setAvailableVoices(sortedViVoices);
+
+      // Try to load user preferred voice from localStorage
+      const preferredName = localStorage.getItem('preferredVoiceName');
+      let defaultVoice = sortedViVoices[0] || null;
+      if (preferredName) {
+        const found = sortedViVoices.find(v => v.name === preferredName);
+        if (found) {
+          defaultVoice = found;
+        }
+      }
+
+      console.log('Vietnamese voices found & sorted:', sortedViVoices.map(v => `${v.name} (${v.lang})`));
+      console.log('Selected Vietnamese voice:', defaultVoice ? `${defaultVoice.name} (${defaultVoice.lang})` : 'None');
+
+      if (defaultVoice) {
+        setSelectedVoice(defaultVoice);
+        selectedVoiceRef.current = defaultVoice;
       }
     };
 
@@ -77,6 +107,25 @@ export default function MainLayout() {
       window.speechSynthesis.onvoiceschanged = loadVoices;
     }
   }, []);
+
+  const handleVoiceChange = (voiceName: string) => {
+    const found = availableVoices.find(v => v.name === voiceName);
+    if (found) {
+      setSelectedVoice(found);
+      selectedVoiceRef.current = found;
+      localStorage.setItem('preferredVoiceName', found.name);
+      
+      // Speak visual confirmation
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance('Đã chuyển giọng đọc thành công');
+        utterance.lang = 'vi-VN';
+        utterance.voice = found;
+        utterance.rate = parseFloat(webReaderRateRef.current);
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  };
 
   const speak = (text: string) => {
     if ('speechSynthesis' in window) {
@@ -211,7 +260,11 @@ export default function MainLayout() {
   };
 
   const handleVoiceCommand = (text: string) => {
-    const query = text.toLowerCase().trim();
+    // Remove trailing punctuation (such as . ? !)
+    const cleanedText = text.replace(/[.?!\s]+$/, '').trim();
+    const query = cleanedText.toLowerCase();
+
+    console.log('Processed voice command query:', query);
 
     const commands = [
       { keywords: ['về trang chủ', 'trang chủ', 'quay lại trang chủ'], path: '/', name: 'Trang chủ' },
@@ -242,35 +295,94 @@ export default function MainLayout() {
       return;
     }
 
-    let matched = false;
-    for (const cmd of commands) {
-      if (cmd.keywords.some(kw => query.includes(kw))) {
-        const msg = `Đang di chuyển đến trang ${cmd.name}`;
-        setVoiceFeedback(msg);
-        speak(msg);
-        matched = true;
-        setTimeout(() => {
-          navigate(cmd.path);
-          setShowVoiceModal(false);
-        }, 1200);
+    // 1. Check exact match on the original query
+    let matchedCmd = commands.find(cmd => cmd.keywords.some(kw => query === kw));
+
+    // 2. If not matched, try stripping common navigation prefixes and check again
+    if (!matchedCmd) {
+      let queryForNav = query;
+      const navPrefixes = ['đi tới trang', 'đi đến trang', 'chuyển sang trang', 'mở trang', 'đi tới', 'đi đến', 'chuyển sang', 'mở', 'vào'];
+      for (const prefix of navPrefixes) {
+        if (query.startsWith(prefix + ' ')) {
+          const stripped = query.substring(prefix.length).trim();
+          if (stripped) {
+            queryForNav = stripped;
+            break;
+          }
+        }
+      }
+      matchedCmd = commands.find(cmd => cmd.keywords.some(kw => queryForNav === kw));
+    }
+
+    // 3. If matched a navigation command, execute navigation
+    if (matchedCmd) {
+      const msg = `Đang di chuyển đến trang ${matchedCmd.name}`;
+      setVoiceFeedback(msg);
+      speak(msg);
+      setTimeout(() => {
+        navigate(matchedCmd!.path);
+        setShowVoiceModal(false);
+      }, 1200);
+      return;
+    }
+
+    // 4. If not matched, check search intent prefix (e.g. "tìm việc kế toán")
+    const searchPrefixes = [
+      'tìm kiếm việc làm', 'tìm kiếm công việc', 'tìm việc làm', 'tìm công việc', 
+      'tìm việc', 'việc làm', 'công việc', 'tìm kiếm', 'tìm'
+    ];
+
+    let isSearchIntent = false;
+    let extractedSearchTerm = '';
+
+    for (const prefix of searchPrefixes) {
+      if (query.startsWith(prefix + ' ') && query.length > prefix.length + 1) {
+        extractedSearchTerm = cleanedText.substring(prefix.length).trim();
+        isSearchIntent = true;
         break;
       }
     }
 
-    if (!matched) {
-      const msg = `Không tìm thấy trang phù hợp cho lệnh "${text}". Hãy nói "Trợ giúp" để nghe danh sách lệnh.`;
+    if (isSearchIntent && extractedSearchTerm) {
+      const msg = `Đang tìm kiếm việc làm cho từ khóa: "${extractedSearchTerm}"`;
       setVoiceFeedback(msg);
       speak(msg);
+      setTimeout(() => {
+        navigate(`/jobs?q=${encodeURIComponent(extractedSearchTerm)}`);
+        setShowVoiceModal(false);
+      }, 1200);
+      return;
     }
+
+    // 5. Fallback: treat the entire query as a job search keyword
+    const msg = `Đang tìm kiếm việc làm cho từ khóa: "${cleanedText}"`;
+    setVoiceFeedback(msg);
+    speak(msg);
+    setTimeout(() => {
+      navigate(`/jobs?q=${encodeURIComponent(cleanedText)}`);
+      setShowVoiceModal(false);
+    }, 1200);
   };
 
   const startVoiceAssistant = () => {
     setShowVoiceModal(true);
+    shouldStopOnStartRef.current = false;
+
+    if (keyUpTimeoutRef.current) {
+      clearTimeout(keyUpTimeoutRef.current);
+      keyUpTimeoutRef.current = null;
+    }
+
     if (recognitionRef.current) {
+      if (isRecognitionActiveRef.current) {
+        return; // Already active, avoid starting again
+      }
       try {
         recognitionRef.current.start();
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error starting global speech recognition:', err);
+        setVoiceText(`Lỗi khởi động: ${err.message || err}`);
+        setIsListening(false);
       }
     } else {
       setVoiceText('Rất tiếc, trình duyệt của bạn không hỗ trợ nhận dạng giọng nói.');
@@ -280,9 +392,18 @@ export default function MainLayout() {
 
   const stopVoiceAssistant = () => {
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      if (isRecognitionActiveRef.current) {
+        try {
+          recognitionRef.current.stop();
+          setVoiceText('Đang phân tích câu lệnh...');
+        } catch (err) {
+          console.error('Error stopping speech recognition:', err);
+        }
+      } else {
+        shouldStopOnStartRef.current = true;
+        setVoiceText('Chuẩn bị phân tích...');
+      }
     }
-    setIsListening(false);
   };
 
   useEffect(() => {
@@ -293,18 +414,42 @@ export default function MainLayout() {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.lang = 'vi-VN';
-      recognition.interimResults = false;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        isRecognitionActiveRef.current = true;
         setIsListening(true);
         setVoiceText('Đang nghe... Hãy nói lệnh di chuyển hoặc "Trợ giúp"');
         setVoiceFeedback('');
+
+        // If stop was called while we were starting
+        if (shouldStopOnStartRef.current) {
+          shouldStopOnStartRef.current = false;
+          try {
+            recognition.stop();
+          } catch (err) {
+            console.error('Error stopping speech recognition in onstart:', err);
+          }
+        }
       };
 
       recognition.onerror = (event: any) => {
         console.error('Global Speech recognition error:', event.error);
         setIsListening(false);
+        isRecognitionActiveRef.current = false;
+
+        if (event.error === 'aborted') {
+          // If aborted and no text is present, or if it's in analysis state
+          setVoiceText(currentText => {
+            if (currentText === 'Đang phân tích câu lệnh...' || currentText === 'Chuẩn bị phân tích...') {
+              return 'Không nhận dạng được câu lệnh. Vui lòng thử lại.';
+            }
+            return 'Đã dừng nghe.';
+          });
+          return;
+        }
+
         if (event.error === 'not-allowed') {
           setVoiceText('Lỗi: Hãy cho phép quyền truy cập microphone.');
           speak('Không thể truy cập microphone. Vui lòng cho phép quyền truy cập.');
@@ -318,12 +463,40 @@ export default function MainLayout() {
 
       recognition.onend = () => {
         setIsListening(false);
+        isRecognitionActiveRef.current = false;
+
+        // Reset text if it's stuck in processing states
+        setVoiceText(currentText => {
+          if (
+            currentText === 'Đang phân tích câu lệnh...' || 
+            currentText === 'Chuẩn bị phân tích...' || 
+            currentText.startsWith('Đang nghe...')
+          ) {
+            return 'Không nhận diện được âm thanh. Hãy thử lại.';
+          }
+          return currentText;
+        });
       };
 
       recognition.onresult = (event: any) => {
-        const text = event.results[0][0].transcript || '';
-        setVoiceText(`Bạn đã nói: "${text}"`);
-        handleVoiceCommand(text);
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          const cleanedText = finalTranscript.replace(/[.?!\s]+$/, '').trim();
+          setVoiceText(`Bạn đã nói: "${cleanedText}"`);
+          handleVoiceCommand(cleanedText);
+        } else if (interimTranscript) {
+          setVoiceText(`Đang nghe: "${interimTranscript}"`);
+        }
       };
 
       recognitionRef.current = recognition;
@@ -355,7 +528,14 @@ export default function MainLayout() {
       if (e.key === ' ') {
         if (isSpacePressedRef.current) {
           isSpacePressedRef.current = false;
-          stopVoiceAssistant();
+          
+          if (keyUpTimeoutRef.current) {
+            clearTimeout(keyUpTimeoutRef.current);
+          }
+          // Delay to capture trailing syllables
+          keyUpTimeoutRef.current = setTimeout(() => {
+            stopVoiceAssistant();
+          }, 500);
         }
       }
     };
@@ -365,6 +545,9 @@ export default function MainLayout() {
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown);
       window.removeEventListener('keyup', handleGlobalKeyUp);
+      if (keyUpTimeoutRef.current) {
+        clearTimeout(keyUpTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -864,17 +1047,35 @@ export default function MainLayout() {
 
             {webReaderEnabled && (
               <>
-                {/* Voice Selection Status */}
-                <div className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5 font-medium leading-relaxed">
-                  {selectedVoice ? (
-                    <span className="flex items-center gap-1">
-                      <span>🇻🇳</span>
-                      <span>Giọng đọc: <strong>{selectedVoice.name}</strong></span>
-                    </span>
+                {/* Voice Selector */}
+                <div className="space-y-1">
+                  <label htmlFor="accessibility-voice-select" className="block text-xs font-bold text-gray-700">Giọng đọc tiếng Việt:</label>
+                  {availableVoices.length > 0 ? (
+                    <select
+                      id="accessibility-voice-select"
+                      value={selectedVoice?.name || ''}
+                      onChange={(e) => handleVoiceChange(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500 outline-none cursor-pointer"
+                    >
+                      {availableVoices.map((voice) => (
+                        <option key={voice.name} value={voice.name}>
+                          {voice.name.replace(/Microsoft|Online|Natural|Vietnamese|Vietnam/gi, '').replace(/\(|\)/g, '').trim() || voice.name} {voice.name.toLowerCase().includes('natural') ? '🇻🇳 (Tự nhiên)' : '🇻🇳'}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
-                    <span className="text-amber-805 font-bold">
-                      🔊 Đang tìm kiếm/sử dụng giọng tiếng Việt chuẩn của hệ thống...
-                    </span>
+                    <div className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5 font-medium leading-relaxed">
+                      {selectedVoice ? (
+                        <span className="flex items-center gap-1">
+                          <span>🇻🇳</span>
+                          <span>Giọng đọc: <strong>{selectedVoice.name}</strong></span>
+                        </span>
+                      ) : (
+                        <span className="text-amber-805 font-bold">
+                          🔊 Đang tìm kiếm giọng tiếng Việt chuẩn...
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
 
