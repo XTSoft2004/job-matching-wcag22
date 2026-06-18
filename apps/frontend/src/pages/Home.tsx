@@ -11,7 +11,12 @@ import {
   Flame,
   Heart,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  DollarSign,
+  MapPin,
+  Mail,
+  Phone,
+  Check
 } from 'lucide-react';
 
 interface Job {
@@ -434,8 +439,9 @@ export default function Home() {
           <div className="space-y-1">
             <h2 id="featured-jobs-heading" className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight flex items-center">
               Việc làm tốt nhất
-              <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                ✨ AI Powered
+              <span className="ml-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                <Zap className="h-3 w-3 text-emerald-600 fill-emerald-600" />
+                AI Powered
               </span>
             </h2>
             <p className="text-gray-500 text-sm font-medium">Hệ thống phân tích gợi ý việc làm hấp dẫn phù hợp với hồ sơ ứng tuyển của bạn</p>
@@ -516,13 +522,16 @@ export default function Home() {
                   {/* Badges info */}
                   <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-gray-50">
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700">
-                      💰 {formatSalary(job)}
+                      <DollarSign className="w-3.5 h-3.5" />
+                      {formatSalary(job)}
                     </span>
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600">
-                      📍 {job.province || 'Toàn quốc'}
+                      <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                      {job.province || 'Toàn quốc'}
                     </span>
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600">
-                      💼 {job.jobType}
+                      <Briefcase className="w-3.5 h-3.5 text-gray-400" />
+                      {job.jobType}
                     </span>
                   </div>
 
@@ -623,11 +632,13 @@ export default function Home() {
 
                     {/* Badges */}
                     <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-gray-50">
-                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                        💰 {formatSalary(job)}
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
+                        <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                        {formatSalary(job)}
                       </span>
-                      <span className="text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded">
-                        📍 {job.province || 'Toàn quốc'}
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-lg">
+                        <MapPin className="w-3 h-3 text-gray-400" />
+                        {job.province || 'Toàn quốc'}
                       </span>
                     </div>
 
@@ -678,27 +689,31 @@ export default function Home() {
             </div>
 
             <div className="bg-white/10 border border-white/5 rounded-xl p-3 text-xs flex justify-between items-center">
-              <span>⚡ <strong>3.721</strong> tin đăng đã phản hồi</span>
+              <span className="flex items-center gap-1">
+                <Zap className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
+                <span><strong>3.721</strong> tin đăng đã phản hồi</span>
+              </span>
               <span className="text-emerald-300 font-bold">Xem ngay &gt;</span>
             </div>
           </div>
 
           {/* Widget B: Việc làm phổ thông thu nhập cao */}
           <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm text-left">
-            <h3 className="font-black text-gray-900 text-base mb-4 border-b border-gray-100 pb-2.5">
-              💼 VIỆC PHỔ THÔNG THU NHẬP CAO
+            <h3 className="font-black text-gray-900 text-base mb-4 border-b border-gray-100 pb-2.5 flex items-center gap-1.5">
+              <Briefcase className="h-5 w-5 text-emerald-600" />
+              <span>VIỆC PHỔ THÔNG THU NHẬP CAO</span>
             </h3>
             <ul className="space-y-3 text-sm text-gray-600 mb-6">
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600 font-bold">✔</span>
+              <li className="flex items-center gap-2">
+                <Check className="text-emerald-600 h-4 w-4 shrink-0" />
                 <span>Nhân viên giao nhận hàng nhanh</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600 font-bold">✔</span>
+              <li className="flex items-center gap-2">
+                <Check className="text-emerald-600 h-4 w-4 shrink-0" />
                 <span>Tài xế công nghệ xe máy / ô tô</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600 font-bold">✔</span>
+              <li className="flex items-center gap-2">
+                <Check className="text-emerald-600 h-4 w-4 shrink-0" />
                 <span>Nhân viên phụ bếp / phục vụ nhà hàng</span>
               </li>
               <li className="flex items-start gap-2">
@@ -725,16 +740,23 @@ export default function Home() {
             Đội ngũ hỗ trợ ứng viên luôn sẵn sàng giải đáp thắc mắc, trợ giúp các vấn đề kỹ thuật và tư vấn chỉnh sửa hồ sơ CV miễn phí cho người dùng khiếm thị / khuyết tật.
           </p>
           <div className="text-sm font-semibold text-gray-600 flex flex-wrap gap-x-6 gap-y-2">
-            <span>✉️ Email hỗ trợ: <a href="mailto:hotro@jobmatch.vn" className="text-emerald-700 hover:underline">hotro@jobmatch.vn</a></span>
-            <span>📍 Văn phòng chính: Cầu Giấy, Hà Nội</span>
+            <span className="flex items-center gap-1">
+              <Mail className="h-4 w-4 text-emerald-600" />
+              <span>Email hỗ trợ: <a href="mailto:hotro@jobmatch.vn" className="text-emerald-700 hover:underline">hotro@jobmatch.vn</a></span>
+            </span>
+            <span className="flex items-center gap-1">
+              <MapPin className="h-4 w-4 text-emerald-600" />
+              <span>Văn phòng chính: Cầu Giấy, Hà Nội</span>
+            </span>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 shrink-0 w-full md:w-auto">
           <a
             href="tel:1900068889"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl transition-colors text-center text-base focus:outline-none focus:ring-4 focus:ring-emerald-200"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl transition-colors text-center text-base focus:outline-none focus:ring-4 focus:ring-emerald-200 flex items-center justify-center gap-2"
           >
-            📞 GỌI HỖ TRỢ: 1900 068 889
+            <Phone className="h-5 w-5" />
+            <span>GỌI HỖ TRỢ: 1900 068 889</span>
           </a>
         </div>
       </section>

@@ -589,10 +589,11 @@ export default function SearchResults() {
           </div>
 
           {/* Filter: Ngành nghề */}
-          <div className="space-y-3">
-            <h3 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
-              📁 Ngành nghề chính
-            </h3>
+          <fieldset className="space-y-3">
+            <legend className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+              <Layers className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+              <span>Ngành nghề chính</span>
+            </legend>
             <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
               {industriesList.map((ind) => {
                 const checked = filterIndustries.includes(ind);
@@ -615,13 +616,14 @@ export default function SearchResults() {
                 );
               })}
             </div>
-          </div>
+          </fieldset>
 
           {/* Filter: Hình thức làm việc */}
-          <div className="space-y-3 border-t border-gray-50 pt-4">
-            <h3 className="font-bold text-gray-900 text-sm">
-              💼 Hình thức làm việc
-            </h3>
+          <fieldset className="space-y-3 border-t border-gray-50 pt-4">
+            <legend className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+              <Briefcase className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+              <span>Hình thức làm việc</span>
+            </legend>
             <div className="space-y-2">
               {['Tất cả', 'Toàn thời gian', 'Bán thời gian', 'Thực tập'].map((type) => (
                 <label key={type} className="flex items-center gap-2.5 text-xs text-gray-600 cursor-pointer font-medium hover:text-gray-950">
@@ -636,13 +638,14 @@ export default function SearchResults() {
                 </label>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           {/* Filter: Kinh nghiệm */}
-          <div className="space-y-3 border-t border-gray-50 pt-4">
-            <h3 className="font-bold text-gray-900 text-sm">
-              🎖️ Yêu cầu kinh nghiệm
-            </h3>
+          <fieldset className="space-y-3 border-t border-gray-50 pt-4">
+            <legend className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+              <Award className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+              <span>Yêu cầu kinh nghiệm</span>
+            </legend>
             <div className="space-y-2">
               {['Tất cả', 'Chưa có kinh nghiệm', 'Dưới 1 năm', '1 - 2 năm', '2 - 5 năm', 'Trên 5 năm'].map((exp) => (
                 <label key={exp} className="flex items-center gap-2.5 text-xs text-gray-600 cursor-pointer font-medium hover:text-gray-950">
@@ -657,13 +660,14 @@ export default function SearchResults() {
                 </label>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           {/* Filter: Mức lương */}
-          <div className="space-y-3 border-t border-gray-50 pt-4">
-            <h3 className="font-bold text-gray-900 text-sm">
-              💵 Mức lương mong muốn
-            </h3>
+          <fieldset className="space-y-3 border-t border-gray-50 pt-4">
+            <legend className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+              <DollarSign className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+              <span>Mức lương mong muốn</span>
+            </legend>
             <div className="space-y-2">
               {['Tất cả', 'Dưới 10 triệu', '10 - 15 triệu', '15 - 20 triệu', '20 - 25 triệu', 'Trên 25 triệu', 'Thỏa thuận'].map((range) => (
                 <label key={range} className="flex items-center gap-2.5 text-xs text-gray-600 cursor-pointer font-medium hover:text-gray-950">
@@ -713,7 +717,7 @@ export default function SearchResults() {
                 />
               </div>
             </div>
-          </div>
+          </fieldset>
         </aside>
 
         {/* MIDDLE CONTENT: JOB RESULTS PANEL */}
@@ -721,6 +725,10 @@ export default function SearchResults() {
           className="lg:col-span-3 space-y-6 text-left"
           aria-label="Danh sách kết quả việc làm"
         >
+          {/* Dynamic Accessible Status Announcement */}
+          <div aria-live="polite" className="sr-only">
+            {loading ? 'Đang tìm kiếm việc làm...' : `Đã tìm thấy ${filteredJobs.length} việc làm phù hợp.`}
+          </div>
           {/* Header Title Information */}
           <div className="bg-white p-6 rounded-3xl border border-gray-150 shadow-sm space-y-3">
             <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight leading-tight">
