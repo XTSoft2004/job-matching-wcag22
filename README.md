@@ -16,7 +16,7 @@
 
 ### 2. 🎙️ Điều Hướng & Tìm Kiếm Bằng Giọng Nói (Voice Command & AI Search)
 * **Tìm kiếm bằng giọng nói**: Chỉ cần nhấn nút Microphone, nói từ khóa mong muốn (ví dụ: *"Tôi muốn tìm việc làm lập trình viên ở Đà Nẵng"*), mô hình AI sẽ tự động phân tích và trả về kết quả.
-* **Điều hướng bằng giọng nói**: Hỗ trợ ra lệnh bằng giọng nói để di chuyển giữa các trang chức năng (ví dụ: *"Về trang chủ"*, *"Đến trang viết CV"*, *"Mở bảng tính lương"*).
+* **Điều hướng bằng giọng nói (Push-to-Talk)**: Hỗ trợ nhấn giữ phím `Space` để kích hoạt micro nói lệnh di chuyển giữa các trang chức năng (ví dụ: *"Về trang chủ"*, *"Đến trang viết CV"*, *"Mở bảng tính lương"*) và thả phím `Space` ra để gửi lệnh chuyển trang ngay lập tức. Phím tắt dự phòng: `Alt + V`.
 
 ### 3. 🎯 Giải Pháp Nhân Sự & Công Cụ Tiện Ích Thông Minh
 * **Viết CV chuyên nghiệp ([CvBuilder](apps/frontend/src/pages/note/CvBuilder.tsx))**: Soạn thảo thông tin thực tế, hiển thị bản xem trước sang trọng và hỗ trợ in/tải PDF trực tuyến.
