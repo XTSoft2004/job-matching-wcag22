@@ -308,71 +308,145 @@ export default function AdminUsers() {
             <p className="text-gray-500 font-bold">Không tìm thấy người dùng phù hợp.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <caption className="sr-only">Danh sách tài khoản người dùng trên hệ thống</caption>
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
-                  <th scope="col" className="px-6 py-4">Tên & Email</th>
-                  <th scope="col" className="px-6 py-4">Số điện thoại</th>
-                  <th scope="col" className="px-6 py-4">Vai trò</th>
-                  <th scope="col" className="px-6 py-4">Trạng thái</th>
-                  <th scope="col" className="px-6 py-4 text-center">Hành động</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-gray-900">{u.fullName}</div>
-                      <div className="text-gray-500 text-xs">{u.email}</div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 font-medium">{u.phone || 'Chưa cung cấp'}</td>
-                    <td className="px-6 py-4">
+          <>
+            {/* Table layout for PC screens */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse">
+                <caption className="sr-only">Danh sách tài khoản người dùng trên hệ thống</caption>
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
+                    <th scope="col" className="px-6 py-4">Tên & Email</th>
+                    <th scope="col" className="px-6 py-4">Số điện thoại</th>
+                    <th scope="col" className="px-6 py-4">Vai trò</th>
+                    <th scope="col" className="px-6 py-4">Trạng thái</th>
+                    <th scope="col" className="px-6 py-4 text-center">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {users.map((u) => (
+                    <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-gray-900">{u.fullName}</div>
+                        <div className="text-gray-500 text-xs">{u.email}</div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 font-medium">{u.phone || 'Chưa cung cấp'}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-bold ${u.role === 'Quản trị viên' ? 'bg-red-50 text-red-700 border border-red-100' :
+                            u.role === 'Nhà tuyển dụng' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                              'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                          }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${u.status === 'Hoạt động' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                          {u.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex justify-center items-center gap-2">
+                          <button
+                            onClick={() => openEditModal(u)}
+                            className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                            title="Sửa thông tin"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleStatus(u)}
+                            className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${u.status === 'Hoạt động' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
+                            title={u.status === 'Hoạt động' ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'}
+                          >
+                            {u.status === 'Hoạt động' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(u)}
+                            disabled={u.id === user?.id}
+                            className={`p-1.5 rounded-lg border border-red-200 text-red-650 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${u.id === user?.id ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            title="Xóa tài khoản"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Card list layout for mobile screens */}
+            <div className="block md:hidden divide-y divide-gray-100">
+              {users.map((u) => (
+                <div 
+                  key={u.id} 
+                  className="p-5 space-y-4 hover:bg-gray-50/30 transition-colors text-left"
+                >
+                  {/* Header: Name and email, status badge */}
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-extrabold text-gray-900 text-base leading-snug truncate">
+                        {u.fullName}
+                      </div>
+                      <div className="text-gray-400 text-xs mt-0.5 font-medium truncate">
+                        {u.email}
+                      </div>
+                    </div>
+                    <div className="shrink-0">
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${u.status === 'Hoạt động' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                        {u.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Details info */}
+                  <div className="space-y-2 text-xs font-semibold text-gray-600">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">Số điện thoại:</span>
+                      <span>{u.phone || 'Chưa cung cấp'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">Vai trò:</span>
                       <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-bold ${u.role === 'Quản trị viên' ? 'bg-red-50 text-red-700 border border-red-100' :
                           u.role === 'Nhà tuyển dụng' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
                             'bg-emerald-50 text-emerald-700 border border-emerald-100'
                         }`}>
                         {u.role}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${u.status === 'Hoạt động' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center items-center gap-2">
-                        <button
-                          onClick={() => openEditModal(u)}
-                          className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                          title="Sửa thông tin"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleToggleStatus(u)}
-                          className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${u.status === 'Hoạt động' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
-                          title={u.status === 'Hoạt động' ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'}
-                        >
-                          {u.status === 'Hoạt động' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUser(u)}
-                          disabled={u.id === user?.id}
-                          className={`p-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${u.id === user?.id ? 'opacity-40 cursor-not-allowed' : ''}`}
-                          title="Xóa tài khoản"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+
+                  {/* Actions row */}
+                  <div className="pt-2.5 border-t border-gray-50 flex items-center justify-end gap-2.5">
+                    <button
+                      onClick={() => openEditModal(u)}
+                      className="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                      title="Sửa thông tin"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleToggleStatus(u)}
+                      className={`p-2.5 rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${u.status === 'Hoạt động' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
+                      title={u.status === 'Hoạt động' ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'}
+                    >
+                      {u.status === 'Hoạt động' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteUser(u)}
+                      disabled={u.id === user?.id}
+                      className={`p-2.5 rounded-xl border border-red-200 text-red-650 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${u.id === user?.id ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      title="Xóa tài khoản"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Pagination Toolbar */}

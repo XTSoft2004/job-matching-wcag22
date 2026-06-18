@@ -444,14 +444,19 @@ export default function Profile() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         
         {/* Navigation Sidebar - WCAG tablist pattern */}
-        <nav className="md:col-span-1 space-y-2.5" role="tablist" aria-label="Mục hồ sơ" aria-orientation="vertical">
+        <nav 
+          className="md:col-span-1 flex flex-row md:flex-col gap-2 md:space-y-2.5 md:gap-0 overflow-x-auto whitespace-nowrap scrollbar-none pb-2 md:pb-0" 
+          role="tablist" 
+          aria-label="Mục hồ sơ" 
+          aria-orientation="vertical"
+        >
           <button
             role="tab"
             onClick={() => setActiveTab('profile')}
             aria-selected={activeTab === 'profile'}
             aria-controls="tab-panel-profile"
             id="tab-profile"
-            className={`w-full flex items-center justify-between p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none ${
+            className={`w-auto md:w-full flex items-center justify-between p-3 md:p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none shrink-0 whitespace-nowrap ${
               activeTab === 'profile' 
                 ? 'bg-primary-700 text-white shadow-md shadow-primary-200' 
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
@@ -461,7 +466,7 @@ export default function Profile() {
               {user.role === 'Nhà tuyển dụng' ? <Building2 className="w-4 h-4" aria-hidden="true" /> : <Briefcase className="w-4 h-4" aria-hidden="true" />}
               <span>{user.role === 'Nhà tuyển dụng' ? 'Hồ sơ doanh nghiệp' : 'Hồ sơ cá nhân'}</span>
             </span>
-            <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'profile' ? 'rotate-90' : ''}`} aria-hidden="true" />
+            <ChevronRight className={`hidden md:block w-4 h-4 transition-transform ${activeTab === 'profile' ? 'rotate-90' : ''}`} aria-hidden="true" />
           </button>
 
           <button
@@ -470,7 +475,7 @@ export default function Profile() {
             aria-selected={activeTab === 'account'}
             aria-controls="tab-panel-account"
             id="tab-account"
-            className={`w-full flex items-center justify-between p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none ${
+            className={`w-auto md:w-full flex items-center justify-between p-3 md:p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none shrink-0 whitespace-nowrap ${
               activeTab === 'account' 
                 ? 'bg-primary-700 text-white shadow-md shadow-primary-200' 
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
@@ -480,7 +485,7 @@ export default function Profile() {
               <User className="w-4 h-4" aria-hidden="true" />
               <span>Tài khoản &amp; bảo mật</span>
             </span>
-            <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'account' ? 'rotate-90' : ''}`} aria-hidden="true" />
+            <ChevronRight className={`hidden md:block w-4 h-4 transition-transform ${activeTab === 'account' ? 'rotate-90' : ''}`} aria-hidden="true" />
           </button>
 
           {user.role === 'Ứng viên' && (
@@ -490,7 +495,7 @@ export default function Profile() {
               aria-selected={activeTab === 'cv'}
               aria-controls="tab-panel-cv"
               id="tab-cv"
-              className={`w-full flex items-center justify-between p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none ${
+              className={`w-auto md:w-full flex items-center justify-between p-3 md:p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none shrink-0 whitespace-nowrap ${
                 activeTab === 'cv' 
                   ? 'bg-primary-700 text-white shadow-md shadow-primary-200' 
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
@@ -500,7 +505,7 @@ export default function Profile() {
                 <FileText className="w-4 h-4" aria-hidden="true" />
                 <span>Quản lý CV</span>
               </span>
-              <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'cv' ? 'rotate-90' : ''}`} aria-hidden="true" />
+              <ChevronRight className={`hidden md:block w-4 h-4 transition-transform ${activeTab === 'cv' ? 'rotate-90' : ''}`} aria-hidden="true" />
             </button>
           )}
         </nav>

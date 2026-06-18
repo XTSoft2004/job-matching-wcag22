@@ -321,7 +321,7 @@ export default function JobDetails() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-16 animate-fade-in relative">
+    <div className="max-w-7xl mx-auto space-y-8 pb-24 lg:pb-16 animate-fade-in relative">
       {/* Back button */}
       <div>
         <Link
@@ -723,6 +723,34 @@ export default function JobDetails() {
           </div>
         )}
       </AccessibleModal>
+
+      {/* Sticky Bottom Action Bar for mobile screens */}
+      {!isApplied && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center justify-between lg:hidden animate-slide-up">
+          <div className="min-w-0 flex-1 pr-4 text-left">
+            <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 uppercase tracking-wide">
+              {formatSalary()}
+            </span>
+            <h4 className="font-extrabold text-gray-900 text-sm leading-snug truncate mt-1">
+              {job.title}
+            </h4>
+          </div>
+          <button
+            onClick={handleOpenApplyModal}
+            className="btn-primary py-2.5 px-6 rounded-xl font-bold text-xs shrink-0 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            Ứng tuyển ngay
+          </button>
+        </div>
+      )}
+      {isApplied && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center justify-center lg:hidden animate-slide-up">
+          <div className="flex items-center gap-1.5 text-green-800 font-extrabold text-xs">
+            <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+            <span>Đã nộp đơn ứng tuyển thành công!</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

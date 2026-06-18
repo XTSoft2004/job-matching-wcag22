@@ -200,64 +200,133 @@ export default function AdminJobs() {
             <p className="text-gray-500 font-bold">Không tìm thấy bài tuyển dụng nào phù hợp.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <caption className="sr-only">Danh sách tin tuyển dụng trên hệ thống</caption>
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
-                  <th scope="col" className="px-6 py-4">Tin Tuyển Dụng & Doanh Nghiệp</th>
-                  <th scope="col" className="px-6 py-4">Địa điểm</th>
-                  <th scope="col" className="px-6 py-4">Mức Lương</th>
-                  <th scope="col" className="px-6 py-4">Trạng thái</th>
-                  <th scope="col" className="px-6 py-4 text-center">Hành động</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {jobs.map((j) => (
-                  <tr key={j.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-gray-900">{j.title}</div>
-                      <div className="text-gray-500 text-xs">{j.company?.name}</div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 font-medium">{j.province || 'Toàn quốc'} ({j.jobType})</td>
-                    <td className="px-6 py-4 text-emerald-700 font-bold">{formatSalary(j)}</td>
-                    <td className="px-6 py-4">
+          <>
+            {/* Table layout for PC screens */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse">
+                <caption className="sr-only">Danh sách tin tuyển dụng trên hệ thống</caption>
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
+                    <th scope="col" className="px-6 py-4">Tin Tuyển Dụng & Doanh Nghiệp</th>
+                    <th scope="col" className="px-6 py-4">Địa điểm</th>
+                    <th scope="col" className="px-6 py-4">Mức Lương</th>
+                    <th scope="col" className="px-6 py-4">Trạng thái</th>
+                    <th scope="col" className="px-6 py-4 text-center">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {jobs.map((j) => (
+                    <tr key={j.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-gray-900">{j.title}</div>
+                        <div className="text-gray-500 text-xs">{j.company?.name}</div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 font-medium">{j.province || 'Toàn quốc'} ({j.jobType})</td>
+                      <td className="px-6 py-4 text-emerald-700 font-bold">{formatSalary(j)}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                          j.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {j.status === 'active' ? 'Đang tuyển' : 'Đã đóng'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex justify-center items-center gap-2">
+                          <Link
+                            to={`/jobs/${j.id}`}
+                            className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                            title="Xem chi tiết tin đăng"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleToggleStatus(j)}
+                            className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${j.status === 'active' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
+                            title={j.status === 'active' ? 'Đóng tin tuyển dụng' : 'Mở lại tin tuyển dụng'}
+                          >
+                            <Power className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteJob(j)}
+                            className="p-1.5 rounded-lg border border-red-200 text-red-650 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                            title="Xóa tin đăng"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Card list layout for mobile screens */}
+            <div className="block md:hidden divide-y divide-gray-100">
+              {jobs.map((j) => (
+                <div 
+                  key={j.id} 
+                  className="p-5 space-y-4 hover:bg-gray-50/30 transition-colors text-left"
+                >
+                  {/* Header: Title and company, status badge */}
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-extrabold text-gray-900 text-base leading-snug hover:text-emerald-700 transition-colors">
+                        <Link to={`/jobs/${j.id}`}>{j.title}</Link>
+                      </h3>
+                      <div className="text-gray-400 text-xs mt-0.5 font-medium">
+                        {j.company?.name}
+                      </div>
+                    </div>
+                    <div className="shrink-0">
                       <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
                         j.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
                         {j.status === 'active' ? 'Đang tuyển' : 'Đã đóng'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center items-center gap-2">
-                        <Link
-                          to={`/jobs/${j.id}`}
-                          className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                          title="Xem chi tiết tin đăng"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => handleToggleStatus(j)}
-                          className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${j.status === 'active' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
-                          title={j.status === 'active' ? 'Đóng tin tuyển dụng' : 'Mở lại tin tuyển dụng'}
-                        >
-                          <Power className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteJob(j)}
-                          className="p-1.5 rounded-lg border border-red-200 text-red-650 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                          title="Xóa tin đăng"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+
+                  {/* Details info */}
+                  <div className="space-y-2 text-xs font-semibold text-gray-600">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">Địa điểm:</span>
+                      <span className="text-gray-800">{j.province || 'Toàn quốc'} ({j.jobType})</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">Mức lương:</span>
+                      <span className="text-emerald-700 font-extrabold">{formatSalary(j)}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions row */}
+                  <div className="pt-2.5 border-t border-gray-50 flex items-center justify-end gap-2.5">
+                    <Link
+                      to={`/jobs/${j.id}`}
+                      className="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                      title="Xem chi tiết tin đăng"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => handleToggleStatus(j)}
+                      className={`p-2.5 rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${j.status === 'active' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
+                      title={j.status === 'active' ? 'Đóng tin tuyển dụng' : 'Mở lại tin tuyển dụng'}
+                    >
+                      <Power className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteJob(j)}
+                      className="p-2.5 rounded-xl border border-red-200 text-red-650 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      title="Xóa tin đăng"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Pagination */}

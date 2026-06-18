@@ -368,51 +368,115 @@ export default function EmployerApplicants() {
             <p className="text-gray-500 font-bold">Chưa có ứng viên nào nộp hồ sơ phù hợp.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <caption className="sr-only">Danh sách hồ sơ ứng tuyển của ứng viên</caption>
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
-                  <th scope="col" className="px-6 py-4">Ứng Viên</th>
-                  <th scope="col" className="px-6 py-4">Vị Trí Ứng Tuyển</th>
-                  <th scope="col" className="px-6 py-4">Lương Mong Muốn</th>
-                  <th scope="col" className="px-6 py-4">Ngày Nộp</th>
-                  <th scope="col" className="px-6 py-4">Trạng thái</th>
-                  <th scope="col" className="px-6 py-4 text-center">Đánh giá</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {applications.map((app) => (
-                  <tr key={app.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-gray-900">{app.profile?.user?.fullName}</div>
-                      <div className="text-gray-500 text-xs">{app.profile?.user?.email}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-gray-800 truncate max-w-xs">{app.job?.title}</div>
-                      <div className="text-gray-500 text-xs">{app.profile?.title || 'Chưa cập nhật vị trí'}</div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-700 font-semibold">
-                      {app.profile?.expectedSalaryMin ? `${(app.profile.expectedSalaryMin / 1000000).toFixed(0)}Tr` : 'Từ'} -
-                      {app.profile?.expectedSalaryMax ? ` ${(app.profile.expectedSalaryMax / 1000000).toFixed(0)}Tr` : ' Thỏa thuận'}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 font-medium">
-                      {new Date(app.createdAt).toLocaleDateString('vi-VN')}
-                    </td>
-                    <td className="px-6 py-4">{getStatusBadge(app.status)}</td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => openAppDetails(app)}
-                        className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center gap-1 mx-auto font-bold text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                      >
-                        <Eye className="w-4 h-4" /> Xem hồ sơ
-                      </button>
-                    </td>
+          <>
+            {/* Table layout for PC screens */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse">
+                <caption className="sr-only">Danh sách hồ sơ ứng tuyển của ứng viên</caption>
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
+                    <th scope="col" className="px-6 py-4">Ứng Viên</th>
+                    <th scope="col" className="px-6 py-4">Vị Trí Ứng Tuyển</th>
+                    <th scope="col" className="px-6 py-4">Lương Mong Muốn</th>
+                    <th scope="col" className="px-6 py-4">Ngày Nộp</th>
+                    <th scope="col" className="px-6 py-4">Trạng thái</th>
+                    <th scope="col" className="px-6 py-4 text-center">Đánh giá</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {applications.map((app) => (
+                    <tr key={app.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-gray-900">{app.profile?.user?.fullName}</div>
+                        <div className="text-gray-500 text-xs">{app.profile?.user?.email}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-gray-800 truncate max-w-xs">{app.job?.title}</div>
+                        <div className="text-gray-500 text-xs">{app.profile?.title || 'Chưa cập nhật vị trí'}</div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 font-semibold">
+                        {app.profile?.expectedSalaryMin ? `${(app.profile.expectedSalaryMin / 1000000).toFixed(0)}Tr` : 'Từ'} -
+                        {app.profile?.expectedSalaryMax ? ` ${(app.profile.expectedSalaryMax / 1000000).toFixed(0)}Tr` : ' Thỏa thuận'}
+                      </td>
+                      <td className="px-6 py-4 text-gray-500 font-medium">
+                        {new Date(app.createdAt).toLocaleDateString('vi-VN')}
+                      </td>
+                      <td className="px-6 py-4">{getStatusBadge(app.status)}</td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() => openAppDetails(app)}
+                          className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center gap-1 mx-auto font-bold text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                        >
+                          <Eye className="w-4 h-4" /> Xem hồ sơ
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Card list layout for mobile screens */}
+            <div className="block md:hidden divide-y divide-gray-100">
+              {applications.map((app) => (
+                <div 
+                  key={app.id} 
+                  className="p-5 space-y-4 hover:bg-gray-50/30 transition-colors text-left"
+                >
+                  {/* Header: Candidate Name and status badge */}
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-extrabold text-gray-900 text-base leading-snug truncate">
+                        {app.profile?.user?.fullName}
+                      </div>
+                      <div className="text-gray-400 text-[11px] mt-0.5 truncate font-medium">
+                        {app.profile?.user?.email}
+                      </div>
+                    </div>
+                    <div className="shrink-0">
+                      {getStatusBadge(app.status)}
+                    </div>
+                  </div>
+
+                  {/* Details list */}
+                  <div className="space-y-2 text-xs font-semibold text-gray-600">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">Vị trí:</span>
+                      <span className="text-gray-800 font-bold truncate max-w-xs">{app.job?.title}</span>
+                    </div>
+                    {app.profile?.title && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-400">Chuyên môn:</span>
+                        <span className="text-gray-700 truncate max-w-xs">{app.profile.title}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">Lương:</span>
+                      <span className="text-emerald-700 font-extrabold">
+                        {app.profile?.expectedSalaryMin ? `${(app.profile.expectedSalaryMin / 1000000).toFixed(0)}Tr` : 'Từ'} -
+                        {app.profile?.expectedSalaryMax ? ` ${(app.profile.expectedSalaryMax / 1000000).toFixed(0)}Tr` : ' Thỏa thuận'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">Ngày nộp:</span>
+                      <span className="text-gray-500">{new Date(app.createdAt).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                  </div>
+
+                  {/* Action button */}
+                  <div className="pt-2 border-t border-gray-50 flex justify-end">
+                    <button
+                      onClick={() => openAppDetails(app)}
+                      className="w-full sm:w-auto py-2.5 px-5 rounded-xl border border-gray-200 text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center justify-center gap-1.5 font-bold text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>Xem hồ sơ &amp; Đánh giá</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Pagination */}
