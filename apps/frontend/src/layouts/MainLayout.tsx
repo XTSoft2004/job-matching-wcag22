@@ -190,9 +190,9 @@ export default function MainLayout() {
               <h3 className="text-white font-bold text-base mb-4">Dành Cho Ứng Viên</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to="/" className="hover:text-primary-400 transition-colors">Tìm kiếm việc làm</Link></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Viết CV chuyên nghiệp</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Tính lương Gross to Net</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Cẩm nang nghề nghiệp</a></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Viết CV chuyên nghiệp</Link></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Tính lương Gross to Net</Link></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Cẩm nang nghề nghiệp</Link></li>
               </ul>
             </div>
 
@@ -201,9 +201,9 @@ export default function MainLayout() {
               <h3 className="text-white font-bold text-base mb-4">Dành Cho Nhà Tuyển Dụng</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to="/dang-tin" className="hover:text-primary-400 transition-colors">Đăng tin tuyển dụng</Link></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Tìm kiếm hồ sơ ứng viên</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Giải pháp nhân sự AI</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Huy hiệu nhà tuyển dụng uy tín</a></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Tìm kiếm hồ sơ ứng viên</Link></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Giải pháp nhân sự AI</Link></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Huy hiệu nhà tuyển dụng uy tín</Link></li>
               </ul>
             </div>
 
@@ -211,10 +211,10 @@ export default function MainLayout() {
             <div>
               <h3 className="text-white font-bold text-base mb-4">Điều Khoản & Chính Sách</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Điều khoản dịch vụ</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Chính sách bảo mật</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Quy chế hoạt động</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Báo cáo WCAG 2.2 AA</a></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Điều khoản dịch vụ</Link></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Chính sách bảo mật</Link></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Quy chế hoạt động</Link></li>
+                <li><Link to="/" className="hover:text-primary-400 transition-colors">Báo cáo WCAG 2.2 AA</Link></li>
               </ul>
             </div>
           </div>

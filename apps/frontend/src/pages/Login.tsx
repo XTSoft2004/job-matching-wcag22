@@ -58,7 +58,7 @@ export default function Login() {
 
       <div className="max-w-md w-full space-y-8 bg-white/70 backdrop-blur-md p-8 rounded-3xl border border-white/80 shadow-xl relative z-10 animate-slide-up">
         <div>
-          <div className="mx-auto h-12 w-12 rounded-2xl bg-primary-600 flex items-center justify-center text-white shadow-lg shadow-primary-200">
+          <div className="mx-auto h-12 w-12 rounded-2xl bg-primary-700 flex items-center justify-center text-white shadow-lg shadow-primary-200">
             <LogIn className="h-6 w-6" aria-hidden="true" />
           </div>
           <h1 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -139,7 +139,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-0.5"
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md"
                   aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
                 >
                   {showPassword ? (

@@ -3,13 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { Modal, notification } from 'antd';
-import { 
-  FileText, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Eye, 
-  X, 
+import {
+  FileText,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Eye,
+  X,
   ExternalLink,
   ChevronLeft,
   ChevronRight,
@@ -57,7 +57,7 @@ export default function EmployerApplicants() {
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
+
   // Detail Modal States
   const [selectedApp, setSelectedApp] = useState<ApplicationItem | null>(null);
   const [recruiterNote, setRecruiterNote] = useState('');
@@ -158,7 +158,7 @@ export default function EmployerApplicants() {
   // Update applicant status or note
   const handleUpdateApplication = async (newStatus: string, noteText: string = recruiterNote) => {
     if (!selectedApp) return;
-    
+
     const performUpdate = async () => {
       setUpdatingStatus(true);
       setErrorMsg(null);
@@ -172,7 +172,7 @@ export default function EmployerApplicants() {
         const updatedApp = { ...selectedApp, status: newStatus, employerNote: noteText || null };
         setApplications(prev => prev.map(a => a.id === selectedApp.id ? updatedApp : a));
         setSelectedApp(updatedApp);
-        
+
         notification.success({
           message: 'Cập nhật thành công',
           description: 'Hồ sơ ứng viên đã được cập nhật trạng thái và ghi chú.'
@@ -194,7 +194,7 @@ export default function EmployerApplicants() {
       let label = 'Đang duyệt';
       if (newStatus === 'approved') label = 'Nhận ứng viên';
       if (newStatus === 'rejected') label = 'Từ chối hồ sơ';
-      
+
       Modal.confirm({
         title: 'Xác nhận thay đổi trạng thái',
         content: `Bạn có chắc muốn chuyển hồ sơ của ứng viên sang trạng thái [${label}]?`,
@@ -323,7 +323,7 @@ export default function EmployerApplicants() {
                       <div className="text-gray-500 text-xs">{app.profile?.title || 'Chưa cập nhật vị trí'}</div>
                     </td>
                     <td className="px-6 py-4 text-gray-700 font-semibold">
-                      {app.profile?.expectedSalaryMin ? `${(app.profile.expectedSalaryMin / 1000000).toFixed(0)}Tr` : 'Từ'} - 
+                      {app.profile?.expectedSalaryMin ? `${(app.profile.expectedSalaryMin / 1000000).toFixed(0)}Tr` : 'Từ'} -
                       {app.profile?.expectedSalaryMax ? ` ${(app.profile.expectedSalaryMax / 1000000).toFixed(0)}Tr` : ' Thỏa thuận'}
                     </td>
                     <td className="px-6 py-4 text-gray-500 font-medium">
@@ -449,7 +449,7 @@ export default function EmployerApplicants() {
               {/* Recruiter Evaluation Panel */}
               <div className="space-y-3 pt-4 border-t border-gray-100">
                 <h4 className="font-bold text-gray-950 text-base">Ghi chú & Đánh giá nội bộ</h4>
-                
+
                 <div>
                   <label htmlFor="recruiter-notes" className="label-text">Ghi chú tuyển dụng (Chỉ doanh nghiệp xem)</label>
                   <textarea
@@ -502,7 +502,7 @@ export default function EmployerApplicants() {
                   disabled={updatingStatus}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-2 px-4 rounded-lg flex items-center gap-1 shadow-sm transition-colors"
                 >
-                  <CheckCircle className="w-4 h-4" /> Nhận ứng viên
+                  <CheckCircle className="w-4 h-4" /> Gửi lời mời phỏng vấn
                 </button>
               </div>
             </div>
