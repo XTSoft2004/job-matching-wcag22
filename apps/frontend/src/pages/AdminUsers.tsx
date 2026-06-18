@@ -3,16 +3,16 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { Modal, notification } from 'antd';
-import { 
-  Users, 
-  Search, 
-  ShieldAlert, 
-  Trash2, 
-  UserCheck, 
-  UserX, 
-  Edit3, 
-  X, 
-  ChevronLeft, 
+import {
+  Users,
+  Search,
+  ShieldAlert,
+  Trash2,
+  UserCheck,
+  UserX,
+  Edit3,
+  X,
+  ChevronLeft,
   ChevronRight,
   AlertCircle
 } from 'lucide-react';
@@ -34,7 +34,7 @@ export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
+
   // Modal states for editing
   const [editingUser, setEditingUser] = useState<UserItem | null>(null);
   const [editName, setEditName] = useState('');
@@ -105,8 +105,8 @@ export default function AdminUsers() {
     setLoading(true);
     setActionError(null);
     try {
-      const url = search 
-        ? `/users?page=${page}&limit=10&search=${encodeURIComponent(search)}` 
+      const url = search
+        ? `/users?page=${page}&limit=10&search=${encodeURIComponent(search)}`
         : `/users?page=${page}&limit=10`;
       const res: any = await api.get(url);
       setUsers(res.data || []);
@@ -133,7 +133,7 @@ export default function AdminUsers() {
   // Status Toggles using Antd Confirm
   const handleToggleStatus = (targetUser: UserItem) => {
     const nextStatus = targetUser.status === 'Hoạt động' ? 'Tạm khóa' : 'Hoạt động';
-    
+
     Modal.confirm({
       title: 'Xác nhận thay đổi trạng thái',
       content: `Bạn có chắc muốn chuyển trạng thái tài khoản của ${targetUser.fullName} thành [${nextStatus}]?`,
@@ -329,18 +329,16 @@ export default function AdminUsers() {
                     </td>
                     <td className="px-6 py-4 text-gray-600 font-medium">{u.phone || 'Chưa cung cấp'}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-bold ${
-                        u.role === 'Quản trị viên' ? 'bg-red-50 text-red-700 border border-red-100' :
-                        u.role === 'Nhà tuyển dụng' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
-                        'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                      }`}>
+                      <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-bold ${u.role === 'Quản trị viên' ? 'bg-red-50 text-red-700 border border-red-100' :
+                          u.role === 'Nhà tuyển dụng' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                            'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                        }`}>
                         {u.role}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        u.status === 'Hoạt động' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${u.status === 'Hoạt động' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
                         {u.status}
                       </span>
                     </td>
