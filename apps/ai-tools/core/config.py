@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     embedding_model_name: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     search_threshold: float = 0.7
     cors_origins: list[str] = ["*"]
+    openrouter_api_key: str = ""
+    openrouter_model: str = "google/gemini-2.5-flash"
 
     class Config:
         env_file = ".env"

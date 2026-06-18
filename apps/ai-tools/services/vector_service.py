@@ -5,6 +5,7 @@ from pinecone import Pinecone
 from services.base import BaseVectorService
 from schemas.navigation import NavigationRouteSchema
 from schemas.job import JobPayloadSchema
+from schemas.query_parser import ExtractedJobQuerySchema
 from core.config import settings
 
 class PineconeVectorService(BaseVectorService):
@@ -70,6 +71,14 @@ class PineconeVectorService(BaseVectorService):
                 "section": section,
                 "text": text[:1000] # truncate text if too long to save space
             }
+            # Thêm metadata về lương và kinh nghiệm (chỉ thêm nếu giá trị không rỗng để tránh lỗi Pinecone validation)
+            if job.salaryMin is not None:
+                metadata["salary_min"] = float(job.salaryMin)
+            if job.salaryMax is not None:
+                metadata["salary_max"] = float(job.salaryMax)
+            if job.experienceLevel:
+                metadata["experience_level"] = job.experienceLevel
+                
             vectors.append({
                 "id": vector_id,
                 "values": embedding,
@@ -130,14 +139,33 @@ class PineconeVectorService(BaseVectorService):
             description=metadata.get("description", "")
         )
 
-    async def search_jobs(self, query_text: str, top_k: int = 5) -> list[dict]:
-        # Perform semantic search on the full query text to capture context
-        print(f"🧠 [Semantic Search Jobs]: '{query_text}'")
-        query_embedding = self.model.encode(query_text).tolist()
+    async def search_jobs(self, query_text: str, top_k: int = 5, extracted_query: Optional[ExtractedJobQuerySchema] = None) -> list[dict]:
+        # Nếu có thông tin trích xuất cấu trúc từ LLM, sử dụng các trường đặc trưng để mã hóa câu truy vấn tinh gọn
+        if extracted_query and (extracted_query.jobs or extracted_query.others.skills or extracted_query.others.location):
+            jobs_part = " ".join(extracted_query.jobs)
+            skills_part = " ".join(extracted_query.others.skills)
+            loc_part = extracted_query.others.location or ""
+            
+            vector_query_parts = []
+            if jobs_part:
+                vector_query_parts.append(jobs_part)
+            if skills_part:
+                vector_query_parts.append(skills_part)
+            if loc_part:
+                vector_query_parts.append(loc_part)
+                
+            vector_query = " ".join(vector_query_parts)
+            if not vector_query:
+                vector_query = query_text
+        else:
+            vector_query = query_text
+
+        print(f"🧠 [Semantic Search Jobs] Vector Query: '{vector_query}' (Original: '{query_text}')")
+        query_embedding = self.model.encode(vector_query).tolist()
         
         response = self.index.query(
             vector=query_embedding,
-            top_k=top_k * 3, # fetch more since we might have multiple chunks per job
+            top_k=top_k * 4, # tăng top_k để có tập kết quả rộng hơn để re-score
             include_metadata=True,
             filter={"type": "job"}
         )
@@ -146,7 +174,6 @@ class PineconeVectorService(BaseVectorService):
             print("⚠️ Không tìm thấy công việc nào phù hợp.")
             return []
             
-        # Deduplicate jobs (we chunked them by section, so multiple chunks might match the same job)
         seen_job_ids = set()
         jobs = []
         
@@ -157,32 +184,82 @@ class PineconeVectorService(BaseVectorService):
             if job_id not in seen_job_ids:
                 seen_job_ids.add(job_id)
                 
-                # Hybrid search boost
                 title = metadata.get("title", "")
                 company_name = metadata.get("company_name", "")
                 text_preview = metadata.get("text", "")
                 industry = metadata.get("industry", "")
                 province = metadata.get("province", "")
+                job_type = metadata.get("job_type", "")
+                
+                salary_min = metadata.get("salary_min")
+                salary_max = metadata.get("salary_max")
                 
                 final_score = match.score
                 
-                # Boost if query matches title exactly or partially
-                if query_text.lower() in title.lower():
-                    final_score += 0.4
-                    print(f"🔥 [Job Title Match]: Query '{query_text}' matches title '{title}'! Boosting score.")
-                
-                # Boost if query matches company name
-                if company_name and query_text.lower() in company_name.lower():
-                    final_score += 0.4
-                    print(f"🔥 [Company Match]: Query '{query_text}' matches company '{company_name}'! Boosting score.")
-                
-                # Boost if query matches province
-                if province and query_text.lower() in province.lower():
-                    final_score += 0.2
+                # TH1: Chấm điểm dựa trên thông tin cấu trúc trích xuất từ LLM
+                if extracted_query:
+                    # 1. Khớp chức danh mong muốn (Title Match)
+                    title_matched = False
+                    for parsed_job in extracted_query.jobs:
+                        if parsed_job.lower() in title.lower():
+                            final_score += 0.6
+                            title_matched = True
+                            print(f"🔥 [Boost Title]: Tiêu đề '{title}' khớp với từ khóa '{parsed_job}' (+0.6)")
                     
-                # Boost if query matches industry
-                if industry and query_text.lower() in industry.lower():
-                    final_score += 0.2
+                    # 2. Khớp địa điểm làm việc (Location Match)
+                    if extracted_query.others.location and province:
+                        loc_clean = extracted_query.others.location.lower().replace("tỉnh", "").replace("thành phố", "").replace("tp.", "").strip()
+                        prov_clean = province.lower().replace("tỉnh", "").replace("thành phố", "").replace("tp.", "").strip()
+                        if loc_clean in prov_clean or prov_clean in loc_clean:
+                            final_score += 0.5
+                            print(f"🔥 [Boost Location]: Địa điểm '{province}' khớp với yêu cầu '{extracted_query.others.location}' (+0.5)")
+                    
+                    # 3. Khớp loại hình công việc (Job Type Match)
+                    if extracted_query.others.job_type and job_type:
+                        if extracted_query.others.job_type.lower() in job_type.lower() or job_type.lower() in extracted_query.others.job_type.lower():
+                            final_score += 0.3
+                            print(f"🔥 [Boost Job Type]: Loại hình '{job_type}' khớp với yêu cầu '{extracted_query.others.job_type}' (+0.3)")
+                    
+                    # 4. Khớp mức lương (Salary Match)
+                    ext_min = extracted_query.salary.min
+                    ext_max = extracted_query.salary.max
+                    
+                    if ext_min is not None or ext_max is not None:
+                        if salary_min is not None or salary_max is not None:
+                            s_min = float(salary_min) if salary_min is not None else 0.0
+                            s_max = float(salary_max) if salary_max is not None else float('inf')
+                            
+                            e_min = ext_min if ext_min is not None else 0.0
+                            e_max = ext_max if ext_max is not None else float('inf')
+                            
+                            # Kiểm tra giao thoa giữa 2 khoảng lương
+                            if max(e_min, s_min) <= min(e_max, s_max):
+                                final_score += 0.4
+                                print(f"🔥 [Boost Salary]: Mức lương job ({s_min/1000000}Tr - {s_max/1000000}Tr) khớp mong muốn ({e_min/1000000}Tr - {e_max/1000000}Tr) (+0.4)")
+                            else:
+                                final_score -= 0.3
+                                print(f"⚠️ [Penalize Salary]: Lương job ({s_min/1000000}Tr - {s_max/1000000}Tr) KHÔNG khớp mong muốn ({e_min/1000000}Tr - {e_max/1000000}Tr) (-0.3)")
+                        else:
+                            # Job có lương thỏa thuận hoặc thương lượng
+                            final_score += 0.1
+                            print(f"🔥 [Salary Negotiable]: Job không ghi khoảng lương cụ thể, tương thích lương thỏa thuận (+0.1)")
+                            
+                    # 5. Khớp kỹ năng/skills yêu cầu
+                    for skill in extracted_query.others.skills:
+                        if skill.lower() in text_preview.lower() or skill.lower() in title.lower():
+                            final_score += 0.2
+                            print(f"🔥 [Boost Skill]: Tìm thấy kỹ năng '{skill}' (+0.2)")
+                            
+                # TH2: Phân tích thô dự phòng khi không có cấu trúc trích xuất
+                else:
+                    if query_text.lower() in title.lower():
+                        final_score += 0.4
+                    if company_name and query_text.lower() in company_name.lower():
+                        final_score += 0.4
+                    if province and query_text.lower() in province.lower():
+                        final_score += 0.2
+                    if industry and query_text.lower() in industry.lower():
+                        final_score += 0.2
 
                 jobs.append({
                     "score": final_score,
@@ -191,12 +268,12 @@ class PineconeVectorService(BaseVectorService):
                     "company_id": metadata.get("company_id"),
                     "company_name": company_name,
                     "industry": industry,
-                    "job_type": metadata.get("job_type"),
+                    "job_type": job_type,
                     "province": province,
                     "matched_section": metadata.get("section"),
                     "matched_text_preview": text_preview[:200]
                 })
                 
-        # Return sorted by score
+        # Sắp xếp theo score giảm dần
         jobs.sort(key=lambda x: x["score"], reverse=True)
         return jobs[:top_k]
