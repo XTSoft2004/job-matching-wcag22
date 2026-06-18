@@ -111,7 +111,7 @@ export default function Login() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email-address" className="label-text">
-                Địa chỉ Email
+                Địa chỉ Email <span className="text-red-600" aria-hidden="true">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -126,6 +126,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-field pl-10"
                   placeholder="name@example.com"
+                  required
                   aria-required="true"
                   disabled={loading}
                 />
@@ -134,7 +135,7 @@ export default function Login() {
 
             <div>
               <label htmlFor="password" className="label-text">
-                Mật khẩu
+                Mật khẩu <span className="text-red-600" aria-hidden="true">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -149,6 +150,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="input-field pl-10 pr-10"
                   placeholder="••••••••"
+                  required
                   aria-required="true"
                   disabled={loading}
                 />

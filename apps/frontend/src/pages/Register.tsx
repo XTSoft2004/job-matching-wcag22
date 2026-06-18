@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { UserPlus, Mail, Lock, User, Phone, AlertCircle } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Phone, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function Register() {
   const { register } = useAuth();
@@ -17,6 +17,7 @@ export default function Register() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('Ứng viên');
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +106,7 @@ export default function Register() {
           <div className="space-y-4">
             <div>
               <label htmlFor="full-name" className="label-text">
-                Họ và Tên
+                Họ và Tên <span className="text-red-600" aria-hidden="true">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -120,6 +121,7 @@ export default function Register() {
                   onChange={(e) => setFullName(e.target.value)}
                   className="input-field pl-10"
                   placeholder="Nguyễn Văn A"
+                  required
                   aria-required="true"
                   disabled={loading}
                 />
@@ -128,7 +130,7 @@ export default function Register() {
 
             <div>
               <label htmlFor="email-address" className="label-text">
-                Địa chỉ Email
+                Địa chỉ Email <span className="text-red-600" aria-hidden="true">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -143,6 +145,7 @@ export default function Register() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-field pl-10"
                   placeholder="name@example.com"
+                  required
                   aria-required="true"
                   disabled={loading}
                 />
@@ -151,7 +154,7 @@ export default function Register() {
 
             <div>
               <label htmlFor="password" className="label-text">
-                Mật khẩu
+                Mật khẩu <span className="text-red-600" aria-hidden="true">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -160,16 +163,33 @@ export default function Register() {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-10 pr-10"
                   placeholder="Tối thiểu 6 ký tự"
+                  required
                   aria-required="true"
+                  aria-describedby="password-help"
                   disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md"
+                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </button>
               </div>
+              <p id="password-help" className="mt-1 text-xs text-gray-500">
+                Mật khẩu phải có ít nhất 6 ký tự.
+              </p>
             </div>
 
             <div>

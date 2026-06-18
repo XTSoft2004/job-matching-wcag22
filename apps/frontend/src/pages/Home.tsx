@@ -22,7 +22,7 @@ import {
 interface Job {
   id: number;
   title: string;
-  company: { 
+  company: {
     name: string;
     logo?: string | null;
   };
@@ -49,6 +49,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('Tất cả');
   const [currentPage, setCurrentPage] = useState(1);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [carouselPaused, setCarouselPaused] = useState(false);
   const [favorites, setFavorites] = useState<number[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('favorites') || '[]');
@@ -91,13 +92,14 @@ export default function Home() {
   // Countdown timer for Lightning Badge ("Huy hiệu tia sét")
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 59, seconds: 59 });
 
-  // Auto carousel slide effect
+  // Auto carousel slide effect - dừng khi bị pause
   useEffect(() => {
+    if (carouselPaused) return;
     const timer = setInterval(() => {
       setCarouselIndex((prev) => (prev + 1) % slides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, []);
+  }, [carouselPaused]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -383,13 +385,23 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Slideshow Promo Box */}
-        <div className="w-full lg:w-80 shrink-0 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-64 relative z-10 text-left">
-          <div className="space-y-4">
+        {/* Right Slideshow Promo Box - WCAG Carousel */}
+        <div
+          className="w-full lg:w-80 shrink-0 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-64 relative z-10 text-left"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Giới thiệu tính năng"
+          aria-live="off"
+        >
+          <div>
+            {/* Screen reader live region for slide content */}
+            <div aria-live="polite" aria-atomic="true" className="sr-only">
+              Slide {carouselIndex + 1} trong {slides.length}: {slides[carouselIndex].title}
+            </div>
             <span className="inline-block px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider">
               {slides[carouselIndex].badge}
             </span>
-            <h3 className="text-xl font-bold text-white leading-tight">
+            <h3 className="text-xl font-bold text-white leading-tight pt-2">
               {slides[carouselIndex].title}
             </h3>
             <p className="text-gray-300 text-sm leading-relaxed line-clamp-4">
@@ -398,24 +410,39 @@ export default function Home() {
           </div>
 
           <div className="flex justify-between items-center pt-4 border-t border-white/10">
-            <div className="flex gap-1.5">
-              {slides.map((_, idx) => (
+            <div className="flex gap-1.5" role="tablist" aria-label="Chọn slide">
+              {slides.map((slide, idx) => (
                 <button
                   key={idx}
+                  role="tab"
                   onClick={() => setCarouselIndex(idx)}
                   className={`h-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${idx === carouselIndex ? 'w-5 bg-emerald-400' : 'w-2 bg-white/40'}`}
-                  aria-label={`Slide ${idx + 1}`}
+                  aria-label={`Xem slide ${idx + 1}: ${slide.title}`}
+                  aria-selected={idx === carouselIndex}
                 />
               ))}
             </div>
             <div className="flex gap-1">
               <button
                 type="button"
+                onClick={() => setCarouselPaused(!carouselPaused)}
+                className="p-1 rounded bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                aria-label={carouselPaused ? 'Tiếp tục tự động chuyển slide' : 'Tạm dừng tự động chuyển slide'}
+                aria-pressed={carouselPaused}
+              >
+                {carouselPaused ? (
+                  <span className="text-xs font-bold px-1" aria-hidden="true">▶</span>
+                ) : (
+                  <span className="text-xs font-bold px-1" aria-hidden="true">⏸</span>
+                )}
+              </button>
+              <button
+                type="button"
                 onClick={() => setCarouselIndex((carouselIndex - 1 + slides.length) % slides.length)}
                 className="p-1 rounded bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                 aria-label="Slide trước"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -423,7 +450,7 @@ export default function Home() {
                 className="p-1 rounded bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                 aria-label="Slide tiếp"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -443,26 +470,29 @@ export default function Home() {
             <h2 id="featured-jobs-heading" className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight flex items-center">
               Việc làm tốt nhất
               <span className="ml-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                <Zap className="h-3 w-3 text-emerald-600 fill-emerald-600" />
+                <Zap className="h-3 w-3 text-emerald-600 fill-emerald-600" aria-hidden="true" />
                 AI Powered
               </span>
             </h2>
             <p className="text-gray-500 text-sm font-medium">Hệ thống phân tích gợi ý việc làm hấp dẫn phù hợp với hồ sơ ứng tuyển của bạn</p>
           </div>
-          <button
-            onClick={() => { navigate('/jobs'); }}
+          <Link
+            to="/jobs"
             className="text-emerald-700 hover:text-emerald-800 font-bold text-sm hover:underline"
           >
             Xem tất cả việc làm tốt nhất &gt;
-          </button>
+          </Link>
         </div>
 
-        {/* Tab Filters */}
+        {/* Tab Filters - WCAG tablist pattern */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Lọc việc làm theo vị trí">
             {['Tất cả', 'Hà Nội', 'TP. Hồ Chí Minh', 'Khác'].map((tab) => (
               <button
                 key={tab}
+                role="tab"
+                aria-selected={activeTab === tab}
+                aria-controls={`tab-panel-featured`}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${activeTab === tab
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm'
@@ -473,13 +503,14 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <span className="text-gray-500 font-bold text-sm">{jobs.length} việc làm phù hợp</span>
+          <span className="text-gray-500 font-bold text-sm" aria-live="polite" aria-atomic="true">{jobs.length} việc làm phù hợp</span>
         </div>
 
         {/* Jobs Grid loading state */}
         {loading ? (
-          <div className="flex justify-center items-center py-20" aria-busy="true" aria-label="Đang tải dữ liệu công việc">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-b-emerald-600"></div>
+          <div className="flex justify-center items-center py-20" aria-busy="true" aria-label="Đang tải dữ liệu công việc" id="tab-panel-featured" role="tabpanel">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-b-emerald-600" aria-hidden="true"></div>
+            <span className="sr-only">Đang tải...</span>
           </div>
         ) : featuredList.length === 0 ? (
           <div className="text-center py-16 bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">

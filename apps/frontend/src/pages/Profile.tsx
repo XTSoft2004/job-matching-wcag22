@@ -22,7 +22,7 @@ import {
   X,
   Eye
 } from 'lucide-react';
-import AccessibleModal from '../components/ui/AccessibleModal';
+import AccessibleModal, { ConfirmDialog } from '../components/ui/AccessibleModal';
 
 interface CandidateProfileData {
   id: number;
@@ -89,6 +89,9 @@ export default function Profile() {
   const [previewCvUrl, setPreviewCvUrl] = useState<string | null>(null);
   const [previewCvTitle, setPreviewCvTitle] = useState<string>('');
 
+  // Confirm Delete CV Dialog - thay thế window.confirm() - WCAG
+  const [confirmDeleteCvId, setConfirmDeleteCvId] = useState<number | null>(null);
+
   const loadCvs = async (profileId: number) => {
     setLoadingCvs(true);
     try {
@@ -143,10 +146,9 @@ export default function Profile() {
     }
   };
 
-  // Delete CV
+  // Delete CV - thực hiện sau khi confirm
   const handleCvDelete = async (id: number) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa CV này khỏi hệ thống?')) return;
-
+    setConfirmDeleteCvId(null); // close dialog
     setSuccessMsg(null);
     setErrorMsg(null);
     try {
@@ -441,58 +443,67 @@ export default function Profile() {
       {/* Main content split */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         
-        {/* Navigation Sidebar */}
-        <div className="md:col-span-1 space-y-2.5">
+        {/* Navigation Sidebar - WCAG tablist pattern */}
+        <nav className="md:col-span-1 space-y-2.5" role="tablist" aria-label="Mục hồ sơ" aria-orientation="vertical">
           <button
+            role="tab"
             onClick={() => setActiveTab('profile')}
+            aria-selected={activeTab === 'profile'}
+            aria-controls="tab-panel-profile"
+            id="tab-profile"
             className={`w-full flex items-center justify-between p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none ${
               activeTab === 'profile' 
                 ? 'bg-primary-700 text-white shadow-md shadow-primary-200' 
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
-            aria-current={activeTab === 'profile' ? 'page' : undefined}
           >
             <span className="flex items-center gap-2.5">
-              {user.role === 'Nhà tuyển dụng' ? <Building2 className="w-4 h-4" /> : <Briefcase className="w-4 h-4" />}
+              {user.role === 'Nhà tuyển dụng' ? <Building2 className="w-4 h-4" aria-hidden="true" /> : <Briefcase className="w-4 h-4" aria-hidden="true" />}
               <span>{user.role === 'Nhà tuyển dụng' ? 'Hồ sơ doanh nghiệp' : 'Hồ sơ cá nhân'}</span>
             </span>
-            <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'profile' ? 'rotate-90' : ''}`} />
+            <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'profile' ? 'rotate-90' : ''}`} aria-hidden="true" />
           </button>
 
           <button
+            role="tab"
             onClick={() => setActiveTab('account')}
+            aria-selected={activeTab === 'account'}
+            aria-controls="tab-panel-account"
+            id="tab-account"
             className={`w-full flex items-center justify-between p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none ${
               activeTab === 'account' 
                 ? 'bg-primary-700 text-white shadow-md shadow-primary-200' 
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
-            aria-current={activeTab === 'account' ? 'page' : undefined}
           >
             <span className="flex items-center gap-2.5">
-              <User className="w-4 h-4" />
-              <span>Tài khoản & bảo mật</span>
+              <User className="w-4 h-4" aria-hidden="true" />
+              <span>Tài khoản &amp; bảo mật</span>
             </span>
-            <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'account' ? 'rotate-90' : ''}`} />
+            <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'account' ? 'rotate-90' : ''}`} aria-hidden="true" />
           </button>
 
           {user.role === 'Ứng viên' && (
             <button
+              role="tab"
               onClick={() => setActiveTab('cv')}
+              aria-selected={activeTab === 'cv'}
+              aria-controls="tab-panel-cv"
+              id="tab-cv"
               className={`w-full flex items-center justify-between p-3.5 rounded-xl font-medium transition-all text-left focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none ${
                 activeTab === 'cv' 
                   ? 'bg-primary-700 text-white shadow-md shadow-primary-200' 
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
               }`}
-              aria-current={activeTab === 'cv' ? 'page' : undefined}
             >
               <span className="flex items-center gap-2.5">
-                <FileText className="w-4 h-4" />
+                <FileText className="w-4 h-4" aria-hidden="true" />
                 <span>Quản lý CV</span>
               </span>
-              <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'cv' ? 'rotate-90' : ''}`} />
+              <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'cv' ? 'rotate-90' : ''}`} aria-hidden="true" />
             </button>
           )}
-        </div>
+        </nav>
 
         {/* Form area */}
         <div className="md:col-span-3 space-y-6">
@@ -652,8 +663,10 @@ export default function Profile() {
                           
                           <div className="min-w-0 flex-1">
                             {editingCvId === cv.id ? (
-                              <div className="flex items-center gap-2 mt-1">
+                              <div className="flex items-center gap-2 mt-1" role="group" aria-label={`Chỉnh sửa mô tả cho ${cv.description || 'CV'}`}>
+                                <label htmlFor={`edit-cv-desc-${cv.id}`} className="sr-only">Mô tả CV mới</label>
                                 <input
+                                  id={`edit-cv-desc-${cv.id}`}
                                   type="text"
                                   value={editingDesc}
                                   onChange={(e) => setEditingDesc(e.target.value)}
@@ -696,32 +709,34 @@ export default function Profile() {
                               setPreviewCvTitle(cv.description || 'Xem CV');
                             }}
                             className="p-2 border border-gray-200 hover:border-primary-500 hover:bg-primary-50 rounded-xl text-gray-600 hover:text-primary-750 transition-all focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-                            title="Xem chi tiết CV"
+                            aria-label={`Xem chi tiết CV: ${cv.description || 'CV file'}`}
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-4 h-4" aria-hidden="true" />
                           </button>
 
                           {/* Edit button */}
                           {editingCvId !== cv.id && (
                             <button
+                              type="button"
                               onClick={() => {
                                 setEditingCvId(cv.id);
                                 setEditingDesc(cv.description || '');
                               }}
                               className="p-2 border border-gray-200 hover:border-yellow-500 hover:bg-yellow-50 rounded-xl text-gray-600 hover:text-yellow-750 transition-all focus-visible:ring-2 focus-visible:ring-yellow-500"
-                              title="Sửa tên CV"
+                              aria-label={`Sửa tên CV: ${cv.description || 'CV file'}`}
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-4 h-4" aria-hidden="true" />
                             </button>
                           )}
 
-                          {/* Delete button */}
+                          {/* Delete button - opens ConfirmDialog */}
                           <button
-                            onClick={() => handleCvDelete(cv.id)}
+                            type="button"
+                            onClick={() => setConfirmDeleteCvId(cv.id)}
                             className="p-2 border border-gray-200 hover:border-red-500 hover:bg-red-50 rounded-xl text-gray-600 hover:text-red-750 transition-all focus-visible:ring-2 focus-visible:ring-red-500"
-                            title="Xóa CV"
+                            aria-label={`Xóa CV: ${cv.description || 'CV file'}`}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </div>
                       </div>
@@ -1265,6 +1280,17 @@ export default function Profile() {
           </div>
         </AccessibleModal>
       )}
+
+      {/* Accessible Delete Confirmation Dialog - thay thế window.confirm() */}
+      <ConfirmDialog
+        isOpen={confirmDeleteCvId !== null}
+        onConfirm={() => confirmDeleteCvId !== null && handleCvDelete(confirmDeleteCvId)}
+        onCancel={() => setConfirmDeleteCvId(null)}
+        title="Xác nhận xóa CV"
+        message="Bạn có chắc chắn muốn xóa CV này khỏi hệ thống? Hành động này không thể hoàn tác."
+        confirmLabel="Xóa CV"
+        cancelLabel="Hủy bỏ"
+      />
         </div>
       </div>
     </div>

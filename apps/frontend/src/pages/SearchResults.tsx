@@ -695,9 +695,11 @@ export default function SearchResults() {
 
             {/* Custom Min-Max Input */}
             <div className="pt-2">
-              <span className="text-[11px] font-bold text-gray-400 block mb-1">HOẶC NHẬP KHOẢNG LƯƠNG (TRIỆU VNĐ)</span>
+              <span id="salary-range-label" className="text-[11px] font-bold text-gray-400 block mb-1">HOẶC NHẬP KHOẢNG LƯƠNG (TRIỆU VNĐ)</span>
               <div className="flex items-center gap-2">
+                <label htmlFor="custom-salary-min" className="sr-only">Lương tối thiểu (triệu VNĐ)</label>
                 <input
+                  id="custom-salary-min"
                   type="number"
                   placeholder="Min"
                   value={customMinSalary}
@@ -706,9 +708,12 @@ export default function SearchResults() {
                     setFilterSalaryRange('Tất cả');
                   }}
                   className="w-full bg-gray-50 border border-gray-200 px-2 py-1.5 text-xs font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
+                  aria-labelledby="salary-range-label"
                 />
-                <span className="text-gray-400 text-xs">-</span>
+                <span className="text-gray-400 text-xs" aria-hidden="true">-</span>
+                <label htmlFor="custom-salary-max" className="sr-only">Lương tối đa (triệu VNĐ)</label>
                 <input
+                  id="custom-salary-max"
                   type="number"
                   placeholder="Max"
                   value={customMaxSalary}
@@ -717,11 +722,14 @@ export default function SearchResults() {
                     setFilterSalaryRange('Tất cả');
                   }}
                   className="w-full bg-gray-50 border border-gray-200 px-2 py-1.5 text-xs font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900"
+                  aria-labelledby="salary-range-label"
                 />
               </div>
             </div>
           </fieldset>
         </aside>
+
+
 
         {/* MIDDLE CONTENT: JOB RESULTS PANEL */}
         <main 
@@ -729,7 +737,7 @@ export default function SearchResults() {
           aria-label="Danh sách kết quả việc làm"
         >
           {/* Dynamic Accessible Status Announcement */}
-          <div aria-live="polite" className="sr-only">
+          <div aria-live="polite" aria-atomic="true" role="status" className="sr-only">
             {loading ? 'Đang tìm kiếm việc làm...' : `Đã tìm thấy ${filteredJobs.length} việc làm phù hợp.`}
           </div>
           {/* Header Title Information */}
@@ -748,10 +756,10 @@ export default function SearchResults() {
             {/* Sub-Filters: query match type & sorting */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center pt-3 border-t border-gray-50">
               
-              {/* Radio Group: Tên việc làm / Tên công ty / Cả hai */}
+              {/* Radio Group: Tên việc làm / Tên công ty / Cả hai - WCAG radiogroup pattern */}
               <div className="flex items-center gap-3">
-                <span className="text-xs text-gray-500 font-bold">Tìm theo:</span>
-                <div className="flex gap-2">
+                <span id="match-type-label" className="text-xs text-gray-500 font-bold">Tìm theo:</span>
+                <div className="flex gap-2" role="radiogroup" aria-labelledby="match-type-label">
                   {[
                     { key: 'both', label: 'Cả hai' },
                     { key: 'title', label: 'Tên việc làm' },
@@ -760,6 +768,8 @@ export default function SearchResults() {
                     <button
                       key={item.key}
                       type="button"
+                      role="radio"
+                      aria-checked={matchType === item.key}
                       onClick={() => setMatchType(item.key as any)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                         matchType === item.key
