@@ -44,6 +44,7 @@ interface ApplicationItem {
   coverLetter: string | null;
   status: string;
   employerNote: string | null;
+  interviewTime?: string | null;
   createdAt: string;
 }
 
@@ -59,14 +60,24 @@ export default function EmployerApplicants() {
   const [totalPages, setTotalPages] = useState(1);
 
   // Detail Modal States
-  const [selectedApp, setSelectedApp] = useState<ApplicationItem | null>(null);
+  const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [recruiterNote, setRecruiterNote] = useState('');
+  const [interviewTime, setInterviewTime] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Refs for modal focus management
   const modalRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+
+  // Helper to format Date to datetime-local string
+  const formatDateTimeLocal = (dateStr?: string | Date | null) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const pad = (num: number) => String(num).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
 
   useEffect(() => {
     if (selectedApp) {
@@ -152,30 +163,60 @@ export default function EmployerApplicants() {
   const openAppDetails = (app: ApplicationItem) => {
     setSelectedApp(app);
     setRecruiterNote(app.employerNote || '');
+    setInterviewTime(formatDateTimeLocal(app.interviewTime));
     setErrorMsg(null);
   };
 
   // Update applicant status or note
-  const handleUpdateApplication = async (newStatus: string, noteText: string = recruiterNote) => {
+  const handleUpdateApplication = async (
+    newStatus: string,
+    noteText: string = recruiterNote,
+    timeVal: string = interviewTime
+  ) => {
     if (!selectedApp) return;
+
+    // Validation for interview invitation
+    if (newStatus === 'approved' && !timeVal) {
+      notification.warning({
+        message: 'Thiếu thời gian phỏng vấn',
+        description: 'Vui lòng chọn thời gian phỏng vấn trước khi gửi lời mời cho ứng viên.'
+      });
+      return;
+    }
 
     const performUpdate = async () => {
       setUpdatingStatus(true);
       setErrorMsg(null);
       try {
-        await api.patch(`/applications/${selectedApp.id}`, {
+        const payload: any = {
           status: newStatus,
-          employerNote: noteText || null
-        });
+          employerNote: noteText || null,
+          interviewTime: timeVal ? new Date(timeVal).toISOString() : null
+        };
+
+        await api.patch(`/applications/${selectedApp.id}`, payload);
 
         // Update state
-        const updatedApp = { ...selectedApp, status: newStatus, employerNote: noteText || null };
+        const updatedApp = {
+          ...selectedApp,
+          status: newStatus === 'approved' ? 'Phỏng vấn' : newStatus === 'rejected' ? 'Bị từ chối' : newStatus === 'reviewing' ? 'Đang xem xét' : newStatus,
+          employerNote: noteText || null,
+          interviewTime: timeVal ? new Date(timeVal).toISOString() : null
+        };
         setApplications(prev => prev.map(a => a.id === selectedApp.id ? updatedApp : a));
-        setSelectedApp(updatedApp);
+
+        const isStatusChange = ['approved', 'rejected', 'reviewing'].includes(newStatus);
+        if (isStatusChange) {
+          setSelectedApp(null);
+        } else {
+          setSelectedApp(updatedApp);
+        }
 
         notification.success({
           message: 'Cập nhật thành công',
-          description: 'Hồ sơ ứng viên đã được cập nhật trạng thái và ghi chú.'
+          description: newStatus === 'approved' 
+            ? 'Đã cập nhật trạng thái và gửi thư mời phỏng vấn thành công qua email ứng viên.'
+            : 'Hồ sơ ứng viên đã được cập nhật trạng thái và ghi chú.'
         });
       } catch (err: any) {
         console.error(err);
@@ -192,19 +233,21 @@ export default function EmployerApplicants() {
     // Confirm dialog if changing status directly
     if (newStatus !== selectedApp.status) {
       let label = 'Đang duyệt';
-      if (newStatus === 'approved') label = 'Nhận ứng viên';
+      if (newStatus === 'approved') label = 'Mời phỏng vấn & Gửi email';
       if (newStatus === 'rejected') label = 'Từ chối hồ sơ';
 
       Modal.confirm({
         title: 'Xác nhận thay đổi trạng thái',
-        content: `Bạn có chắc muốn chuyển hồ sơ của ứng viên sang trạng thái [${label}]?`,
+        content: newStatus === 'approved' 
+          ? `Hệ thống sẽ gửi email mời phỏng vấn chính thức vào lúc ${new Date(timeVal).toLocaleString('vi-VN')} cho ứng viên. Bạn có chắc chắn?`
+          : `Bạn có chắc muốn chuyển hồ sơ của ứng viên sang trạng thái [${label}]?`,
         okText: 'Xác nhận',
         cancelText: 'Hủy',
         okButtonProps: { style: { backgroundColor: newStatus === 'rejected' ? '#ff4d4f' : '#00b14f', borderColor: newStatus === 'rejected' ? '#ff4d4f' : '#00b14f' } },
         onOk: performUpdate
       });
     } else {
-      // Just saving notes, no confirmation needed
+      // Just saving notes or interview time, no confirmation needed
       await performUpdate();
     }
   };
@@ -212,13 +255,20 @@ export default function EmployerApplicants() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'submitted':
-        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">Đã nộp</span>;
+      case 'Đã nộp':
+        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-850">Đã nộp</span>;
       case 'reviewing':
-        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">Đang duyệt</span>;
+      case 'Đang xem xét':
+        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-850">Đang duyệt</span>;
+      case 'shortlisted':
+      case 'Phỏng vấn':
+        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-850">Phỏng vấn</span>;
       case 'approved':
-        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">Được nhận</span>;
+      case 'Đã tuyển':
+        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-850">Được nhận</span>;
       case 'rejected':
-        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">Không đạt</span>;
+      case 'Bị từ chối':
+        return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-850">Không đạt</span>;
       default:
         return <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-800">{status}</span>;
     }
@@ -369,13 +419,13 @@ export default function EmployerApplicants() {
 
       {/* Profile and Evaluation Details Modal Dialog */}
       {selectedApp && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in">
           <div
             ref={modalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="eval-modal-title"
-            className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden relative animate-slide-up max-h-[90vh] flex flex-col text-left"
+            className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden relative animate-slide-up max-h-[80vh] flex flex-col text-left my-8 sm:my-0"
           >
             <div className="flex justify-between items-center bg-gray-50 px-6 py-4 border-b border-gray-200 shrink-0">
               <div>
@@ -424,6 +474,23 @@ export default function EmployerApplicants() {
                 </div>
               )}
 
+              {/* Interview schedule notification if already scheduled */}
+              {selectedApp.interviewTime && (
+                <div className="p-4 bg-purple-50 border border-purple-100 rounded-2xl text-xs text-purple-950 font-bold flex items-center gap-3 animate-fade-in shadow-inner">
+                  <span className="flex h-2.5 w-2.5 rounded-full bg-purple-600 animate-ping"></span>
+                  <span>
+                    Lịch phỏng vấn đã hẹn: <strong className="text-purple-900">{new Date(selectedApp.interviewTime).toLocaleString('vi-VN', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</strong>
+                  </span>
+                </div>
+              )}
+
               {/* CV File Attachment */}
               <div className="space-y-2">
                 <h4 className="font-bold text-gray-900 text-sm">Hồ sơ đính kèm (CV)</h4>
@@ -463,14 +530,28 @@ export default function EmployerApplicants() {
                   ></textarea>
                 </div>
 
+                <div>
+                  <label htmlFor="interview-time" className="label-text block font-bold text-gray-800 text-xs mb-1">
+                    Chọn thời gian phỏng vấn (Bắt buộc để gửi email mời phỏng vấn)
+                  </label>
+                  <input
+                    id="interview-time"
+                    type="datetime-local"
+                    value={interviewTime}
+                    onChange={(e) => setInterviewTime(e.target.value)}
+                    className="input-field text-sm py-2 px-3 bg-white"
+                    disabled={updatingStatus}
+                  />
+                </div>
+
                 <div className="flex justify-end pt-2">
                   <button
                     type="button"
-                    onClick={() => handleUpdateApplication(selectedApp.status, recruiterNote)}
+                    onClick={() => handleUpdateApplication(selectedApp.status, recruiterNote, interviewTime)}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-lg text-xs"
                     disabled={updatingStatus}
                   >
-                    Lưu ghi chú
+                    Lưu ghi chú & thời gian
                   </button>
                 </div>
               </div>

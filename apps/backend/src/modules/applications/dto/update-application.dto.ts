@@ -38,15 +38,25 @@ export class UpdateApplicationDto {
 
   @ApiPropertyOptional({
     description: 'Trạng thái của đơn ứng tuyển',
-    enum: ApplicationStatus,
-    example: ApplicationStatus.REVIEWING,
+    example: 'reviewing',
   })
   /**
    * Trạng thái hoạt động hoặc trạng thái xử lý.
    */
-  @IsEnum(ApplicationStatus, { message: 'Trạng thái không hợp lệ' })
+  @IsString({ message: 'Trạng thái phải là chuỗi' })
   @IsOptional()
-  status?: ApplicationStatus;
+  status?: string;
+
+  @ApiPropertyOptional({
+    description: 'Thời gian phỏng vấn',
+    example: '2026-06-25T14:30:00.000Z',
+  })
+  /**
+   * Thời gian phỏng vấn.
+   */
+  @IsString({ message: 'Thời gian phỏng vấn phải là chuỗi ISO' })
+  @IsOptional()
+  interviewTime?: string;
 
   @ApiPropertyOptional({
     description: 'Ghi chú nội bộ của nhà tuyển dụng',

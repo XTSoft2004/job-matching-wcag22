@@ -5,6 +5,7 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { REQUEST } from '@nestjs/core';
@@ -24,9 +25,12 @@ import { User, UserRole } from '@/modules/users/entities/user.entity';
 import { UsersService } from '@/modules/users/users.service';
 import { CandidateProfilesService } from '@/modules/candidate/candidate_profiles/candidate-profiles.service';
 import { CandidateCvsService } from '@/modules/candidate/candidate_cvs/candidate-cvs.service';
+import { MailService } from '@/common/services/mail.service';
 
 @Injectable()
 export class ApplicationsService extends BaseService {
+  private readonly logger = new Logger(ApplicationsService.name);
+
   constructor(
     @InjectRepository(Application)
     private readonly applicationRepository: Repository<Application>,
@@ -35,6 +39,7 @@ export class ApplicationsService extends BaseService {
     private readonly usersService: UsersService,
     private readonly candidateProfilesService: CandidateProfilesService,
     private readonly candidateCvsService: CandidateCvsService,
+    private readonly mailService: MailService,
     @Inject(REQUEST)
     protected readonly req: Request & { user?: JWTInfoResponse },
   ) {
@@ -286,19 +291,48 @@ export class ApplicationsService extends BaseService {
 
     const application = await this.applicationRepository.findOne({
       where: { id },
-      relations: { job: true, profile: true },
+      relations: {
+        job: { company: true },
+        profile: { user: true },
+      },
     });
 
     if (!application) {
       throw new NotFoundException('Không tìm thấy đơn ứng tuyển');
     }
 
+    // Map status from English key or Vietnamese value to ApplicationStatus enum
+    let statusEnum: ApplicationStatus | undefined = undefined;
+    if (dto.status !== undefined) {
+      const statusLower = dto.status.toLowerCase();
+      if (statusLower === 'submitted' || dto.status === ApplicationStatus.SUBMITTED) {
+        statusEnum = ApplicationStatus.SUBMITTED;
+      } else if (statusLower === 'reviewing' || dto.status === ApplicationStatus.REVIEWING) {
+        statusEnum = ApplicationStatus.REVIEWING;
+      } else if (statusLower === 'approved' || statusLower === 'shortlisted' || dto.status === ApplicationStatus.SHORTLISTED) {
+        statusEnum = ApplicationStatus.SHORTLISTED;
+      } else if (statusLower === 'hired' || dto.status === ApplicationStatus.HIRED) {
+        statusEnum = ApplicationStatus.HIRED;
+      } else if (statusLower === 'rejected' || dto.status === ApplicationStatus.REJECTED) {
+        statusEnum = ApplicationStatus.REJECTED;
+      } else {
+        throw new BadRequestException('Trạng thái không hợp lệ');
+      }
+    }
+
+    const isNewShortlist = statusEnum === ApplicationStatus.SHORTLISTED && application.status !== ApplicationStatus.SHORTLISTED;
+    const isInterviewTimeUpdated = dto.interviewTime !== undefined && dto.interviewTime !== null && 
+      (application.interviewTime ? new Date(application.interviewTime).getTime() !== new Date(dto.interviewTime).getTime() : true);
+
+    const shouldSendInterviewMail = (isNewShortlist && (dto.interviewTime || application.interviewTime)) || 
+      (isInterviewTimeUpdated && (statusEnum === ApplicationStatus.SHORTLISTED || (statusEnum === undefined && application.status === ApplicationStatus.SHORTLISTED)));
+
     // Phân quyền cập nhật dựa trên vai trò
     if (currentUser.role === UserRole.CANDIDATE) {
       // Ứng viên không được cập nhật trạng thái tuyển dụng hoặc ghi chú nhà tuyển dụng
-      if (dto.status !== undefined || dto.employerNote !== undefined) {
+      if (dto.status !== undefined || dto.employerNote !== undefined || dto.interviewTime !== undefined) {
         throw new ForbiddenException(
-          'Ứng viên không được cập nhật trạng thái hoặc ghi chú của nhà tuyển dụng',
+          'Ứng viên không được cập nhật trạng thái, thời gian phỏng vấn hoặc ghi chú của nhà tuyển dụng',
         );
       }
 
@@ -369,14 +403,17 @@ export class ApplicationsService extends BaseService {
       }
 
       // Cập nhật trạng thái và ghi chú
-      if (dto.status !== undefined) {
+      if (statusEnum !== undefined) {
         if (
           application.status === ApplicationStatus.SUBMITTED &&
-          dto.status !== ApplicationStatus.SUBMITTED
+          statusEnum !== ApplicationStatus.SUBMITTED
         ) {
           application.reviewedAt = new Date();
         }
-        application.status = dto.status;
+        application.status = statusEnum;
+      }
+      if (dto.interviewTime !== undefined) {
+        application.interviewTime = dto.interviewTime ? new Date(dto.interviewTime) : null;
       }
       if (dto.employerNote !== undefined) {
         application.employerNote = dto.employerNote;
@@ -406,14 +443,17 @@ export class ApplicationsService extends BaseService {
       if (dto.coverLetter !== undefined) {
         application.coverLetter = dto.coverLetter;
       }
-      if (dto.status !== undefined) {
+      if (statusEnum !== undefined) {
         if (
           application.status === ApplicationStatus.SUBMITTED &&
-          dto.status !== ApplicationStatus.SUBMITTED
+          statusEnum !== ApplicationStatus.SUBMITTED
         ) {
           application.reviewedAt = new Date();
         }
-        application.status = dto.status;
+        application.status = statusEnum;
+      }
+      if (dto.interviewTime !== undefined) {
+        application.interviewTime = dto.interviewTime ? new Date(dto.interviewTime) : null;
       }
       if (dto.employerNote !== undefined) {
         application.employerNote = dto.employerNote;
@@ -422,6 +462,28 @@ export class ApplicationsService extends BaseService {
 
     this.setAuditForUpdate(application);
     await this.applicationRepository.save(application);
+
+    // Gửi email mời phỏng vấn nếu đạt điều kiện
+    if (shouldSendInterviewMail) {
+      const candidateEmail = application.profile?.user?.email;
+      const candidateName = application.profile?.user?.fullName || 'Ứng viên';
+      const jobTitle = application.job?.title || 'Vị trí tuyển dụng';
+      const companyName = application.job?.company?.name || 'Đối tác tuyển dụng';
+      const timeToSend = dto.interviewTime || (application.interviewTime ? application.interviewTime.toISOString() : '');
+
+      if (candidateEmail && timeToSend) {
+        this.mailService.sendInterviewInvitation(
+          candidateEmail,
+          candidateName,
+          jobTitle,
+          companyName,
+          timeToSend,
+          dto.employerNote || application.employerNote || undefined
+        ).catch(err => {
+          this.logger.error(`Error sending interview invitation: ${err.message}`, err.stack);
+        });
+      }
+    }
 
     return ResponseHttp.success({
       message: 'Cập nhật đơn ứng tuyển thành công',

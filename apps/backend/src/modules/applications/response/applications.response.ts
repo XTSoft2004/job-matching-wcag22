@@ -41,6 +41,12 @@ export class ApplicationResponse extends BaseResponse {
   status: ApplicationStatus;
 
   /**
+   * Thời gian phỏng vấn.
+   */
+  @Expose()
+  interviewTime?: Date | null;
+
+  /**
    * Ghi chú nội bộ của nhà tuyển dụng.
    */
   @Expose()

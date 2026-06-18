@@ -7,6 +7,7 @@ import { Job } from '@/modules/jobs/entities/job.entity';
 import { UsersModule } from '@/modules/users/users.module';
 import { CandidateProfilesModule } from '@/modules/candidate/candidate_profiles/candidate-profiles.module';
 import { CandidateCvsModule } from '@/modules/candidate/candidate_cvs/candidate-cvs.module';
+import { AuthModule } from '@/modules/authenticator/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CandidateCvsModule } from '@/modules/candidate/candidate_cvs/candidate-
     UsersModule,
     CandidateProfilesModule,
     CandidateCvsModule,
+    AuthModule,
   ],
   controllers: [ApplicationsController],
   providers: [ApplicationsService],

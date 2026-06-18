@@ -102,4 +102,10 @@ export class Application extends EntityBase {
    */
   @Column({ name: 'reviewed_at', type: 'timestamp', nullable: true })
   reviewedAt?: Date | null;
+
+  /**
+   * Thời gian phỏng vấn.
+   */
+  @Column({ name: 'interview_time', type: 'timestamp', nullable: true })
+  interviewTime?: Date | null;
 }
