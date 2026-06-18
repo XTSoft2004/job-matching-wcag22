@@ -194,7 +194,7 @@ export class ApplicationsService extends BaseService {
 
     if (search) {
       queryBuilder.andWhere(
-        '(job.title LIKE :search OR user.fullName LIKE :search)',
+        '(job.title ILIKE :search OR user.fullName ILIKE :search)',
         { search: `%${search}%` },
       );
     }

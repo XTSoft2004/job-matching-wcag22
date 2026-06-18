@@ -24,10 +24,56 @@ export default function Home() {
   // Voice Recording States
   const [isRecording, setIsRecording] = useState(false);
   const [recordingError, setRecordingError] = useState<string | null>(null);
-  const [transcribing, setTranscribing] = useState(false);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
+
+  // Initialize Web Speech API
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.lang = 'vi-VN';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+        setRecordingError(null);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+          setRecordingError('Không thể truy cập microphone. Vui lòng cho phép quyền truy cập.');
+        } else if (event.error === 'no-speech') {
+          setRecordingError('Không nghe thấy giọng nói. Hãy thử nói lại rõ ràng hơn.');
+        } else {
+          setRecordingError(`Lỗi nhận dạng: ${event.error}`);
+        }
+        setIsRecording(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognition.onresult = (event: any) => {
+        const text = event.results[0][0].transcript || '';
+        console.log('Transcribed Text (Web Speech API):', text);
+        if (text.trim()) {
+          setSearchQuery(text);
+          executeSearch(text);
+        } else {
+          setRecordingError('Không thể nhận dạng giọng nói. Hãy thử nói rõ ràng hơn.');
+        }
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, []);
 
   // Fetch all jobs initially
   const fetchJobs = (query: string = '') => {
@@ -97,75 +143,24 @@ export default function Home() {
     }
   };
 
-  // Start Ghi âm
-  const startRecording = async () => {
-    audioChunksRef.current = [];
-    setRecordingError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await handleTranscribe(audioBlob);
-
-        // Dọn dẹp stream microphone
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (err: any) {
-      console.error('Lỗi truy cập microphone:', err);
-      setRecordingError('Không thể truy cập microphone. Vui lòng cho phép quyền truy cập.');
-      setIsRecording(false);
+  // Start Ghi âm Web Speech API
+  const startRecording = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start();
+      } catch (err) {
+        console.error('Error starting speech recognition:', err);
+      }
+    } else {
+      setRecordingError('Trình duyệt của bạn không hỗ trợ nhận diện giọng nói Web Speech API (khuyên dùng Chrome hoặc Edge).');
     }
   };
 
   // Dừng Ghi âm
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+    if (recognitionRef.current && isRecording) {
+      recognitionRef.current.stop();
       setIsRecording(false);
-    }
-  };
-
-  // Gọi dịch vụ AI Tools để Transcribe
-  const handleTranscribe = async (audioBlob: Blob) => {
-    setTranscribing(true);
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('audio_file', audioBlob, 'voice.webm');
-
-      const res = await axios.post('http://127.0.0.1:8000/api/v1/audio/transcribe', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      const text = res.data?.transcription || '';
-      console.log('Transcribed Text:', text);
-      if (text.trim()) {
-        setSearchQuery(text);
-        executeSearch(text);
-      } else {
-        setRecordingError('Không thể nhận dạng giọng nói. Hãy thử nói rõ ràng hơn.');
-        setLoading(false);
-      }
-    } catch (err: any) {
-      console.error('Transcription failed:', err);
-      setRecordingError('Không thể kết nối đến máy chủ nhận dạng giọng nói (port 8000).');
-      setLoading(false);
-    } finally {
-      setTranscribing(false);
     }
   };
 
@@ -236,11 +231,7 @@ export default function Home() {
             </div>
           )}
 
-          {transcribing && (
-            <p className="mt-4 text-primary-700 font-semibold animate-pulse text-sm" aria-live="polite">
-              Đang chuyển giọng nói thành văn bản...
-            </p>
-          )}
+
 
           {/* Recording errors block */}
           {recordingError && (

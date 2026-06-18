@@ -69,7 +69,7 @@ export class UsersService extends BaseService {
 
     if (search) {
       queryBuilder.where(
-        'user.fullName LIKE :search OR user.email LIKE :search',
+        'user.fullName ILIKE :search OR user.email ILIKE :search',
         {
           search: `%${search}%`,
         },

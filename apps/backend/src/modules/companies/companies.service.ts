@@ -50,7 +50,7 @@ export class CompaniesService extends BaseService {
 
     if (search) {
       queryBuilder.where(
-        'company.name LIKE :search OR company.address LIKE :search',
+        'company.name ILIKE :search OR company.address ILIKE :search',
         {
           search: `%${search}%`,
         },

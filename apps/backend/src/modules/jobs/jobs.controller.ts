@@ -16,6 +16,7 @@ import { UpdateJobDto } from './dto/update-job.dto';
 import { ResponseHttp } from '@/common/utils/response.util';
 import { BasePaginateQuery } from '@/common/dto/base-paginate-query.dto';
 import { JobResponse, JobPaginatedResponse } from './response/jobs.response';
+import { Public } from '@/modules/authenticator/decorators/public.decorator';
 
 @ApiTags('Jobs')
 @ApiBearerAuth()
@@ -32,6 +33,7 @@ export class JobsController {
     return this.jobsService.create(createDto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({
     summary: 'Lấy danh sách tin tuyển dụng',
@@ -41,6 +43,7 @@ export class JobsController {
     return this.jobsService.findAll(query);
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({
     summary: 'Lấy chi tiết tin tuyển dụng',

@@ -52,8 +52,9 @@ class PineconeVectorService(BaseVectorService):
             chunks.append(("benefits", job.benefits))
             
         vectors = []
+        company_str = f"Company: {job.companyName}\n" if job.companyName else ""
         for section, text in chunks:
-            text_to_encode = f"Job Title: {job.title}\n{section.capitalize()}: {text}"
+            text_to_encode = f"Job Title: {job.title}\n{company_str}{section.capitalize()}: {text}"
             embedding = self.model.encode(text_to_encode).tolist()
             
             vector_id = f"job_{job.id}_{section}"
@@ -62,6 +63,7 @@ class PineconeVectorService(BaseVectorService):
                 "job_id": job.id,
                 "title": job.title,
                 "company_id": job.companyId,
+                "company_name": job.companyName or "",
                 "industry": job.industry or "",
                 "job_type": job.jobType,
                 "province": job.province or "",
@@ -154,22 +156,47 @@ class PineconeVectorService(BaseVectorService):
             
             if job_id not in seen_job_ids:
                 seen_job_ids.add(job_id)
-                # Keep score to rank
-                jobs.append({
-                    "score": match.score,
-                    "job_id": job_id,
-                    "title": metadata.get("title"),
-                    "company_id": metadata.get("company_id"),
-                    "industry": metadata.get("industry"),
-                    "job_type": metadata.get("job_type"),
-                    "province": metadata.get("province"),
-                    "matched_section": metadata.get("section"),
-                    "matched_text_preview": metadata.get("text", "")[:200]
-                })
                 
-            if len(jobs) >= top_k:
-                break
+                # Hybrid search boost
+                title = metadata.get("title", "")
+                company_name = metadata.get("company_name", "")
+                text_preview = metadata.get("text", "")
+                industry = metadata.get("industry", "")
+                province = metadata.get("province", "")
+                
+                final_score = match.score
+                
+                # Boost if query matches title exactly or partially
+                if query_text.lower() in title.lower():
+                    final_score += 0.4
+                    print(f"🔥 [Job Title Match]: Query '{query_text}' matches title '{title}'! Boosting score.")
+                
+                # Boost if query matches company name
+                if company_name and query_text.lower() in company_name.lower():
+                    final_score += 0.4
+                    print(f"🔥 [Company Match]: Query '{query_text}' matches company '{company_name}'! Boosting score.")
+                
+                # Boost if query matches province
+                if province and query_text.lower() in province.lower():
+                    final_score += 0.2
+                    
+                # Boost if query matches industry
+                if industry and query_text.lower() in industry.lower():
+                    final_score += 0.2
+
+                jobs.append({
+                    "score": final_score,
+                    "job_id": job_id,
+                    "title": title,
+                    "company_id": metadata.get("company_id"),
+                    "company_name": company_name,
+                    "industry": industry,
+                    "job_type": metadata.get("job_type"),
+                    "province": province,
+                    "matched_section": metadata.get("section"),
+                    "matched_text_preview": text_preview[:200]
+                })
                 
         # Return sorted by score
         jobs.sort(key=lambda x: x["score"], reverse=True)
-        return jobs
+        return jobs[:top_k]

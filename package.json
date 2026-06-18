@@ -8,7 +8,7 @@
     "build:backend": "pnpm --prefix apps/backend build",
     "test:backend": "pnpm --prefix apps/backend test",
     "lint:backend": "pnpm --prefix apps/backend lint",
-    "dev:ai": "cd apps/ai-tools && .venv\\Scripts\\python -m uvicorn main:app --reload",
+    "dev:ai": "cd apps/ai-tools && .venv\\Scripts\\python -m uvicorn main:app --reload --reload-dir .",
     "install:backend": "pnpm --prefix apps/backend install",
     "seed:backend": "pnpm --prefix apps/backend db:seed",
     "dev:frontend": "pnpm --prefix apps/frontend dev",

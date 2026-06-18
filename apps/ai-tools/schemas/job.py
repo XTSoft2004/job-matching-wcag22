@@ -16,3 +16,4 @@ class JobPayloadSchema(BaseModel):
     province: Optional[str] = None
     companyId: int
     employerId: int
+    companyName: Optional[str] = None

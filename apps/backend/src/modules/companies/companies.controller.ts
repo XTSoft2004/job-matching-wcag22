@@ -16,6 +16,7 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { ResponseHttp } from '@/common/utils/response.util';
 import { BasePaginateQuery } from '@/common/dto/base-paginate-query.dto';
 import { CompanyResponse, CompanyPaginatedResponse } from './response/companies.response';
+import { Public } from '@/modules/authenticator/decorators/public.decorator';
 
 @ApiTags('Companies')
 @ApiBearerAuth()
@@ -32,6 +33,7 @@ export class CompaniesController {
     return this.companiesService.create(createDto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({
     summary: 'Lấy danh sách công ty',
@@ -42,6 +44,7 @@ export class CompaniesController {
     return this.companiesService.findAll(query);
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({
     summary: 'Lấy thông tin chi tiết công ty',

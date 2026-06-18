@@ -58,7 +58,8 @@ async function syncJobsToVectorDB() {
           workAddress: job.workAddress,
           province: job.province,
           companyId: job.company?.id || job.companyId || 1,
-          employerId: job.employer?.id || job.employerId || 1
+          employerId: job.employer?.id || job.employerId || 1,
+          companyName: job.company?.name || null
         })
       });
 

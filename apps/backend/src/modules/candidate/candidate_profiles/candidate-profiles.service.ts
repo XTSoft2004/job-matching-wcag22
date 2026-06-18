@@ -69,7 +69,7 @@ export class CandidateProfilesService extends BaseService {
 
     if (search) {
       queryBuilder.where(
-        'profile.title LIKE :search OR profile.province LIKE :search OR user.fullName LIKE :search',
+        'profile.title ILIKE :search OR profile.province ILIKE :search OR user.fullName ILIKE :search',
         { search: `%${search}%` },
       );
     }

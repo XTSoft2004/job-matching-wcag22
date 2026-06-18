@@ -10,4 +10,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    watch: {
+      ignored: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/apps/backend/**',
+        '**/apps/ai-tools/**',
+        '**/crawls/**',
+        '**/docs/**',
+      ],
+    },
+  },
 })

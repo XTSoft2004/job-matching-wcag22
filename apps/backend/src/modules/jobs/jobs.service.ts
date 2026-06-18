@@ -70,13 +70,38 @@ export class JobsService extends BaseService {
 
     // Call AI Tools to embed the job asynchronously
     try {
-      fetch('http://127.0.0.1:8000/api/v1/jobs/embed', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(job),
-      }).catch(err => console.error('Failed to call AI Tools embedding webhook:', err));
+      this.jobRepository.findOne({
+        where: { id: job.id },
+        relations: { company: true },
+      }).then((savedJob) => {
+        if (!savedJob) return;
+        
+        const payload = {
+          id: savedJob.id,
+          title: savedJob.title,
+          description: savedJob.description,
+          requirements: savedJob.requirements,
+          benefits: savedJob.benefits,
+          industry: savedJob.industry,
+          jobType: savedJob.jobType,
+          experienceLevel: savedJob.experienceLevel,
+          salaryMin: savedJob.salaryMin,
+          salaryMax: savedJob.salaryMax,
+          workAddress: savedJob.workAddress,
+          province: savedJob.province,
+          companyId: savedJob.companyId,
+          employerId: savedJob.employerId,
+          companyName: savedJob.company?.name || null
+        };
+
+        fetch('http://127.0.0.1:8000/api/v1/jobs/embed', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }).catch(err => console.error('Failed to call AI Tools embedding webhook:', err));
+      }).catch(err => console.error('Error loading job company relation for embedding:', err));
     } catch (error) {
       console.error('Error triggering embedding:', error);
     }
@@ -100,7 +125,7 @@ export class JobsService extends BaseService {
 
     if (search) {
       queryBuilder.where(
-        'job.title LIKE :search OR job.description LIKE :search',
+        'job.title ILIKE :search OR job.description ILIKE :search OR company.name ILIKE :search',
         {
           search: `%${search}%`,
         },

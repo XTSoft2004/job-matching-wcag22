@@ -28,6 +28,7 @@ import { ApplicationsModule } from './modules/applications/applications.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env', 'apps/backend/.env'],
       load: [appConfig, databaseConfig, jwtConfig, mailConfig],
       validationSchema,
       validationOptions: {

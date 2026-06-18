@@ -1,6 +1,6 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, User, Briefcase, PlusCircle, Search } from 'lucide-react';
+import { LogOut, User, PlusCircle, Search } from 'lucide-react';
 
 export default function MainLayout() {
   const { user, logout, loading } = useAuth();
