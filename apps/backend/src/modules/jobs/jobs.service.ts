@@ -117,15 +117,28 @@ export class JobsService extends BaseService {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const search = query.search || '';
+    const idsStr = query.ids || '';
 
     const queryBuilder = this.jobRepository
       .createQueryBuilder('job')
       .leftJoinAndSelect('job.company', 'company')
       .leftJoinAndSelect('job.skills', 'skills');
 
+    if (idsStr) {
+      const ids = idsStr
+        .split(',')
+        .map((id) => parseInt(id.trim()))
+        .filter((id) => !isNaN(id));
+      if (ids.length > 0) {
+        queryBuilder.andWhere('job.id IN (:...ids)', { ids });
+      } else {
+        queryBuilder.andWhere('1 = 0');
+      }
+    }
+
     if (search) {
-      queryBuilder.where(
-        'job.title ILIKE :search OR job.description ILIKE :search OR company.name ILIKE :search',
+      queryBuilder.andWhere(
+        '(job.title ILIKE :search OR job.description ILIKE :search OR company.name ILIKE :search)',
         {
           search: `%${search}%`,
         },

@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import CreateJob from './pages/CreateJob';
 import JobDetails from './pages/JobDetails';
 import { AuthProvider } from './contexts/AuthContext';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/create-job" element={<CreateJob />} />
             <Route path="/jobs/:id" element={<JobDetails />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>
       </Router>

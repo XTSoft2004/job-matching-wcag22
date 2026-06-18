@@ -3,6 +3,7 @@ import { BaseResponse } from '@/common/response/base.response';
 import { ResponseHttp } from '@/common/utils/response.util';
 import { CompanyResponse } from '@/modules/companies/response/companies.response';
 import { JobSkillResponse } from '@/modules/job_skills/response/job-skills.response';
+import { UserResponse } from '@/modules/users/response/users.response';
 import { JobType, JobStatus } from '../entities/job.entity';
 
 /**
@@ -165,6 +166,13 @@ export class JobResponse extends BaseResponse {
   @Expose()
   @Type(() => CompanyResponse)
   company?: CompanyResponse;
+
+  /**
+   * Thông tin nhà tuyển dụng liên kết.
+   */
+  @Expose()
+  @Type(() => UserResponse)
+  employer?: UserResponse;
 
   /**
    * Danh sách kỹ năng chuyên môn.

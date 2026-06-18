@@ -121,12 +121,16 @@ export default function Home() {
         // Extract matched job IDs in order of score
         const matchedIds = vectorData.map((item: any) => Number(item.job_id));
 
-        // Filter and sort the local allJobs array to preserve backend relations (e.g. company info)
+        // Fetch these specific jobs from backend to preserve relationships and details
+        const res: any = await api.get(`/jobs?ids=${matchedIds.join(',')}&limit=${matchedIds.length}`);
+        const fetchedJobs = res.data || [];
+
+        // Sort the fetched jobs in the exact order of score rank from Pinecone
         const sortedJobs = matchedIds
-          .map((id: number) => allJobs.find(job => job.id === id))
+          .map((id: number) => fetchedJobs.find((job: any) => job.id === id))
           .filter((job: any): job is Job => !!job);
 
-        // If sortedJobs is empty (e.g. database has newer jobs not loaded), fallback to fetching
+        // If sortedJobs is empty, fallback to standard fetch
         if (sortedJobs.length > 0) {
           setJobs(sortedJobs);
           setLoading(false);

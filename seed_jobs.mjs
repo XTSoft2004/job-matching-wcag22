@@ -168,7 +168,7 @@ async function seedJobs() {
   console.log('Fetching existing jobs...');
   let existingJobs = [];
   try {
-    const jobsRes = await fetch('http://localhost:3000/api/v1/jobs', {
+    const jobsRes = await fetch('http://localhost:3000/api/v1/jobs?limit=1000', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const jobsData = await jobsRes.json();

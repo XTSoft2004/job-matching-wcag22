@@ -21,7 +21,7 @@ async function syncJobsToVectorDB() {
   console.log('Fetching existing jobs from normal DB...');
   let jobs = [];
   try {
-    const res = await fetch('http://localhost:3000/api/v1/jobs', {
+    const res = await fetch('http://localhost:3000/api/v1/jobs?limit=1000', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();

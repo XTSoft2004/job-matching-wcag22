@@ -4,8 +4,10 @@ import {
   IsString,
   MinLength,
   IsOptional,
+  IsEnum,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UserRole } from '@/modules/users/entities/user.entity';
 
 export class RegisterDto {
   @ApiProperty({
@@ -50,4 +52,16 @@ export class RegisterDto {
   @IsString({ message: 'Số điện thoại phải là chuỗi' })
   @IsOptional()
   phone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Vai trò của người dùng (Ứng viên hoặc Nhà tuyển dụng)',
+    enum: UserRole,
+    default: UserRole.CANDIDATE,
+  })
+  /**
+   * Vai trò người dùng trong hệ thống (Ứng viên, Nhà tuyển dụng, Admin).
+   */
+  @IsEnum(UserRole, { message: 'Vai trò không hợp lệ' })
+  @IsOptional()
+  role?: UserRole;
 }

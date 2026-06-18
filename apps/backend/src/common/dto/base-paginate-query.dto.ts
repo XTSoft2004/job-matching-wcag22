@@ -33,4 +33,9 @@ export class BasePaginateQuery implements Partial<PaginateQuery> {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({ description: 'Danh sách ID (cách nhau bằng dấu phẩy)', example: '1,2,3' })
+  @IsOptional()
+  @IsString()
+  ids?: string;
 }

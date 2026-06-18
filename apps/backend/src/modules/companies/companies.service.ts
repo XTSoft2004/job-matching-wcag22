@@ -12,12 +12,15 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { ResponseHttp } from '@/common/utils/response.util';
 import { BasePaginateQuery } from '@/common/dto/base-paginate-query.dto';
 import { CompanyResponse, CompanyPaginatedResponse } from './response/companies.response';
+import { User } from '@/modules/users/entities/user.entity';
 
 @Injectable()
 export class CompaniesService extends BaseService {
   constructor(
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @Inject(REQUEST)
     protected readonly req: Request & { user?: JWTInfoResponse },
   ) {
@@ -33,7 +36,16 @@ export class CompaniesService extends BaseService {
   async create(dto: CreateCompanyDto): Promise<ResponseHttp<void>> {
     const company = this.companyRepository.create(dto);
     this.setAuditForCreate(company);
-    await this.companyRepository.save(company);
+    const savedCompany = await this.companyRepository.save(company);
+
+    if (this.req.user && this.req.user.id) {
+      const user = await this.userRepository.findOne({ where: { id: this.req.user.id } });
+      if (user) {
+        user.companyId = savedCompany.id;
+        await this.userRepository.save(user);
+      }
+    }
+
     return ResponseHttp.success({
       message: 'Tạo công ty mới thành công',
     });

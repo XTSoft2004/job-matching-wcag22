@@ -115,7 +115,7 @@ export class CandidateProfilesService extends BaseService {
   }
 
   async findByUserId(userId: number): Promise<ResponseHttp<CandidateProfileResponse>> {
-    const profile = await this.candidateProfileRepository.findOne({
+    let profile = await this.candidateProfileRepository.findOne({
       where: { userId },
       relations: {
         user: true,
@@ -125,6 +125,33 @@ export class CandidateProfilesService extends BaseService {
         cvs: true,
       },
     });
+    if (!profile) {
+      // Tự động tạo hồ sơ rỗng cho ứng viên nếu người dùng tồn tại
+      const userResponse = await this.usersService.findOne(userId);
+      if (userResponse && userResponse.data) {
+        const newProfile = this.candidateProfileRepository.create({
+          userId,
+          title: 'Hồ sơ Ứng viên',
+          isOpenToWork: true,
+        });
+        this.setAuditForCreate(newProfile);
+        const savedProfile = await this.candidateProfileRepository.save(newProfile);
+        profile = await this.candidateProfileRepository.findOne({
+          where: { id: savedProfile.id },
+          relations: {
+            user: true,
+            experiences: true,
+            educations: true,
+            skills: true,
+            cvs: true,
+          },
+        });
+      } else {
+        throw new NotFoundException(
+          'Không tìm thấy hồ sơ ứng viên cho tài khoản này',
+        );
+      }
+    }
     if (!profile) {
       throw new NotFoundException(
         'Không tìm thấy hồ sơ ứng viên cho tài khoản này',

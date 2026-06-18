@@ -79,3 +79,4 @@ Thumbs.db
 __pycache__
 
 apps/ai-tools/audio_cache
+crawls/data

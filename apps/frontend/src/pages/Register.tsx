@@ -10,6 +10,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
+  const [role, setRole] = useState('Ứng viên');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +38,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await register(fullName, email, password, phone || undefined);
+      await register(fullName, email, password, phone || undefined, role);
       // Redirect to login page with state containing success message
       navigate('/login', { 
         state: { 
@@ -183,6 +184,38 @@ export default function Register() {
                 />
               </div>
             </div>
+
+            <fieldset className="border-0 p-0 m-0">
+              <legend className="label-text block mb-2 font-semibold text-gray-700">Vai trò đăng ký</legend>
+              <div className="grid grid-cols-2 gap-4">
+                <label className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all focus-within:ring-2 focus-within:ring-primary-500 ${role === 'Ứng viên' ? 'border-primary-600 bg-primary-50/50 text-primary-900' : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'}`}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="Ứng viên"
+                    checked={role === 'Ứng viên'}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="sr-only"
+                    disabled={loading}
+                  />
+                  <span className="font-bold">Ứng viên</span>
+                  <span className="text-xs text-gray-500 text-center mt-1">Tìm việc làm & cơ hội mới</span>
+                </label>
+                <label className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all focus-within:ring-2 focus-within:ring-primary-500 ${role === 'Nhà tuyển dụng' ? 'border-primary-600 bg-primary-50/50 text-primary-900' : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'}`}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="Nhà tuyển dụng"
+                    checked={role === 'Nhà tuyển dụng'}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="sr-only"
+                    disabled={loading}
+                  />
+                  <span className="font-bold">Nhà tuyển dụng</span>
+                  <span className="text-xs text-gray-500 text-center mt-1">Đăng tin tuyển dụng & tìm ứng viên</span>
+                </label>
+              </div>
+            </fieldset>
           </div>
 
           <div className="pt-2">
