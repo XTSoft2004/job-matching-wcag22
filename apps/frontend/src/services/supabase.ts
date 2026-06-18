@@ -39,3 +39,35 @@ export const uploadCvToSupabase = async (file: File): Promise<string> => {
 
   return publicUrl;
 };
+
+/**
+ * Tải file Avatar lên Supabase Storage trong bucket "cv-images"
+ * @param file Đối tượng tệp tin cần tải lên
+ * @returns Đường dẫn URL công khai để truy cập file
+ */
+export const uploadAvatarToSupabase = async (file: File): Promise<string> => {
+  const fileExt = file.name.split('.').pop();
+  const cleanFileName = file.name
+    .replace(`.${fileExt}`, '')
+    .replace(/[^a-zA-Z0-9]/g, '_')
+    .substring(0, 50);
+  const uniqueName = `avatars/${Date.now()}_${cleanFileName}.${fileExt}`;
+
+  const { error } = await supabase.storage
+    .from('avatars')
+    .upload(uniqueName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+  if (error) {
+    console.error('Lỗi khi tải avatar lên Supabase:', error);
+    throw new Error(`Tải avatar lên Supabase thất bại: ${error.message}`);
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(uniqueName);
+
+  return publicUrl;
+};

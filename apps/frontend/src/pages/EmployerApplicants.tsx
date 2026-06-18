@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import AccessibleModal from '../components/ui/AccessibleModal';
 import { Modal, notification } from 'antd';
 import {
   FileText,
@@ -58,6 +59,7 @@ export default function EmployerApplicants() {
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [filterJobTitle, setFilterJobTitle] = useState('');
 
   // Detail Modal States
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
@@ -65,6 +67,10 @@ export default function EmployerApplicants() {
   const [interviewTime, setInterviewTime] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // CV Preview States
+  const [previewCvUrl, setPreviewCvUrl] = useState<string | null>(null);
+  const [previewCvTitle, setPreviewCvTitle] = useState<string>('');
 
   // Refs for modal focus management
   const modalRef = useRef<HTMLDivElement>(null);
@@ -158,6 +164,20 @@ export default function EmployerApplicants() {
   useEffect(() => {
     if (!user || user.role !== 'Nhà tuyển dụng') return;
     fetchApplications(currentPage, statusFilter);
+
+    if (jobIdFilter) {
+      api.get(`/jobs/${jobIdFilter}`)
+        .then((res: any) => {
+          const jobData = res.data?.data || res.data;
+          setFilterJobTitle(jobData?.title || '');
+        })
+        .catch((err) => {
+          console.error('Failed to fetch job details:', err);
+          setFilterJobTitle('');
+        });
+    } else {
+      setFilterJobTitle('');
+    }
   }, [user, currentPage, statusFilter, jobIdFilter]);
 
   const openAppDetails = (app: ApplicationItem) => {
@@ -303,7 +323,7 @@ export default function EmployerApplicants() {
 
       {jobIdFilter && (
         <div className="p-3 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-xl text-sm flex justify-between items-center">
-          <span>🎯 Đang xem ứng viên của bài đăng ID: <strong>{jobIdFilter}</strong></span>
+          <span>🎯 Đang xem ứng viên của tin đăng: <strong>{filterJobTitle || `ID: ${jobIdFilter}`}</strong></span>
           <Link to="/employer/applicants" className="underline font-bold text-xs text-emerald-900">Xóa bộ lọc tin đăng</Link>
         </div>
       )}
@@ -502,14 +522,16 @@ export default function EmployerApplicants() {
                       <span className="text-gray-500 text-xs shrink-0 font-medium">Bản chính thức đính kèm</span>
                     </div>
                   </div>
-                  <a
-                    href={selectedApp.candidateCv?.cvUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition-colors shrink-0 shadow-sm"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPreviewCvUrl(selectedApp.candidateCv?.cvUrl || '');
+                      setPreviewCvTitle(selectedApp.candidateCv?.description || 'Bản CV nộp tuyển');
+                    }}
+                    className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition-colors shrink-0 shadow-sm"
                   >
-                    Xem CV <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
+                    Xem CV <Eye className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
 
@@ -589,6 +611,47 @@ export default function EmployerApplicants() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* CV Preview Modal */}
+      {previewCvUrl && (
+        <AccessibleModal
+          isOpen={!!previewCvUrl}
+          onClose={() => setPreviewCvUrl(null)}
+          title={previewCvTitle || 'Xem CV'}
+          maxWidth="max-w-5xl"
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center bg-gray-50 p-3.5 rounded-2xl border border-gray-200">
+              <span className="text-sm text-gray-500 font-medium">Bản xem trước trực tiếp trên hệ thống</span>
+              <a
+                href={previewCvUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary py-1.5 px-3.5 text-xs flex items-center gap-1.5 hover:shadow-md transition-all shrink-0"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Mở trong tab mới</span>
+              </a>
+            </div>
+            
+            <div className="border border-gray-200 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center min-h-[60vh] max-h-[75vh]">
+              {previewCvUrl.split('?')[0].toLowerCase().match(/\.(png|jpg|jpeg|gif|webp)$/) ? (
+                <img
+                  src={previewCvUrl}
+                  alt={previewCvTitle || 'CV Preview'}
+                  className="max-w-full max-h-[70vh] object-contain p-2"
+                />
+              ) : (
+                <iframe
+                  src={`${previewCvUrl}#toolbar=0`}
+                  title="CV Preview"
+                  className="w-full h-[70vh] border-0"
+                />
+              )}
+            </div>
+          </div>
+        </AccessibleModal>
       )}
     </div>
   );

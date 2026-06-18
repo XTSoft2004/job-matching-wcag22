@@ -66,6 +66,17 @@ export class UpdateUserDto {
   @IsOptional()
   avatarUrl?: string;
 
+  @ApiPropertyOptional({
+    description: 'Ảnh đại diện (alias cho avatarUrl)',
+    example: 'https://example.com/avatar.jpg',
+  })
+  /**
+   * Ảnh đại diện.
+   */
+  @IsString({ message: 'Ảnh đại diện phải là chuỗi' })
+  @IsOptional()
+  avatar?: string;
+
   /**
    * Vai trò người dùng
    */

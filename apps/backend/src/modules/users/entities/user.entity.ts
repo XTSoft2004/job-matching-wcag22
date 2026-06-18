@@ -74,6 +74,20 @@ export class User extends EntityBase {
   avatarUrl?: string;
 
   /**
+   * Getter ảo để truy cập bằng trường 'avatar'.
+   */
+  get avatar(): string | undefined {
+    return this.avatarUrl;
+  }
+
+  /**
+   * Setter ảo để gán cho trường 'avatar'.
+   */
+  set avatar(value: string | undefined) {
+    this.avatarUrl = value;
+  }
+
+  /**
    * Vai trò của tài khoản (mặc định là CANDIDATE).
    */
   @Column({

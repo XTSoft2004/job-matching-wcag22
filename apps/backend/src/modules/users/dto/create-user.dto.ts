@@ -66,6 +66,28 @@ export class CreateUserDto {
   role?: UserRole;
 
   @ApiPropertyOptional({
+    description: 'Đường dẫn URL của ảnh đại diện',
+    example: 'https://example.com/avatar.jpg',
+  })
+  /**
+   * Đường dẫn URL ảnh đại diện.
+   */
+  @IsString({ message: 'URL ảnh đại diện phải là chuỗi' })
+  @IsOptional()
+  avatarUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Ảnh đại diện (alias cho avatarUrl)',
+    example: 'https://example.com/avatar.jpg',
+  })
+  /**
+   * Ảnh đại diện.
+   */
+  @IsString({ message: 'Ảnh đại diện phải là chuỗi' })
+  @IsOptional()
+  avatar?: string;
+
+  @ApiPropertyOptional({
     description: 'Trạng thái tài khoản',
     enum: UserStatus,
     default: UserStatus.ACTIVE,

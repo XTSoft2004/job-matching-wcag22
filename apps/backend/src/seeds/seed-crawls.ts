@@ -287,6 +287,7 @@ async function bootstrap() {
             status: UserStatus.ACTIVE,
             emailVerified: true,
             company: company,
+            avatarUrl: cleanLogoUrl(item.avatar) ?? undefined,
             createdBy: 'crawler_seed',
             modifiedBy: 'crawler_seed',
           });

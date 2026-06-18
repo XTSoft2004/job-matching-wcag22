@@ -32,6 +32,14 @@ export class UserResponse extends BaseResponse {
   avatarUrl?: string;
 
   /**
+   * Ảnh đại diện (alias cho avatarUrl).
+   */
+  @Expose()
+  get avatar(): string | undefined {
+    return this.avatarUrl;
+  }
+
+  /**
    * Vai trò người dùng trong hệ thống (Ứng viên, Nhà tuyển dụng, Admin).
    */
   @Expose()

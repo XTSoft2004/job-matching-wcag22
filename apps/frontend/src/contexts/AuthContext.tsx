@@ -7,6 +7,8 @@ interface User {
   fullName: string;
   role: string;
   phone?: string;
+  avatarUrl?: string;
+  avatar?: string;
   companyId?: number | null;
 }
 

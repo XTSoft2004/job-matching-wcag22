@@ -8,6 +8,22 @@ import { HashUtil } from '../common/utils/hash.util';
 import * as fs from 'fs';
 import * as path from 'path';
 
+// Helper: remove TopCV image proxy to yield the direct URL
+function cleanLogoUrl(url: string): string | null {
+  if (!url) return null;
+  const prefixes = [
+    'https://cdn-new.topcv.vn/unsafe/',
+    'https://cdn.topcv.vn/unsafe/'
+  ];
+  let cleaned = url.trim();
+  for (const prefix of prefixes) {
+    if (cleaned.startsWith(prefix)) {
+      cleaned = cleaned.substring(prefix.length);
+    }
+  }
+  return cleaned;
+}
+
 // Trình tạo slug đơn giản cho job
 function generateSlug(title: string): string {
   return title
@@ -62,24 +78,8 @@ async function bootstrap() {
 
     console.log('\n👉 Bước 2: Đăng ký tài khoản Nhà tuyển dụng mới...');
     const passwordHash = await HashUtil.hash(passwordRaw);
-    const user = userRepository.create({
-      email,
-      passwordHash,
-      fullName: 'Đại diện tuyển dụng Thủ Thừa',
-      phone: '0988777666',
-      role: UserRole.EMPLOYER,
-      status: UserStatus.ACTIVE, // Kích hoạt ngay lập tức
-      emailVerified: true,
-      createdBy: 'test-workflow',
-      modifiedBy: 'test-workflow',
-    });
-    const savedUser = await userRepository.save(user);
-    console.log(`✅ Đã đăng ký & kích hoạt thành công tài khoản: ${savedUser.email}`);
-
-    console.log('\n👉 Bước 3: Đọc hồ sơ doanh nghiệp từ file JSON crawls/data/1932590.json...');
     
-    // Đọc file crawls/data/1932590.json
-    // Lưu ý đường dẫn tương đối từ thư mục apps/backend
+    // Đọc file crawls/data/1932590.json trước để lấy avatar cho user
     const crawlFilePath = path.join(__dirname, '..', '..', '..', '..', 'crawls', 'data', '1932590.json');
     if (!fs.existsSync(crawlFilePath)) {
       throw new Error(`Không tìm thấy file crawl tại đường dẫn: ${crawlFilePath}`);
@@ -88,10 +88,27 @@ async function bootstrap() {
     const crawlData = JSON.parse(fs.readFileSync(crawlFilePath, 'utf8'));
     console.log(`- Đã đọc dữ liệu cào của: "${crawlData.company_name}"`);
 
+    const user = userRepository.create({
+      email,
+      passwordHash,
+      fullName: 'Đại diện tuyển dụng Thủ Thừa',
+      phone: '0988777666',
+      role: UserRole.EMPLOYER,
+      status: UserStatus.ACTIVE, // Kích hoạt ngay lập tức
+      emailVerified: true,
+      avatarUrl: cleanLogoUrl(crawlData.avatar) ?? undefined,
+      createdBy: 'test-workflow',
+      modifiedBy: 'test-workflow',
+    });
+    const savedUser = await userRepository.save(user);
+    console.log(`✅ Đã đăng ký & kích hoạt thành công tài khoản: ${savedUser.email}`);
+
+    console.log('\n👉 Bước 3: Hồ sơ doanh nghiệp đã được đọc...');
+
     console.log('\n👉 Bước 4: Tạo hồ sơ doanh nghiệp...');
     const company = companyRepository.create({
       name: crawlData.company_name,
-      logo: crawlData.avatar,
+      logo: cleanLogoUrl(crawlData.avatar),
       website: 'https://thuthualand.vn', // Giả lập website công ty
       address: crawlData.company_address,
       companySize: crawlData.company_scale,

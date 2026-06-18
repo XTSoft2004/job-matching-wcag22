@@ -7,6 +7,7 @@ interface AccessibleModalProps {
   title: ReactNode;
   children: ReactNode;
   triggerRef?: React.RefObject<HTMLElement>;
+  maxWidth?: string;
 }
 
 export default function AccessibleModal({ 
@@ -14,7 +15,8 @@ export default function AccessibleModal({
   onClose, 
   title, 
   children, 
-  triggerRef 
+  triggerRef,
+  maxWidth = 'max-w-lg'
 }: AccessibleModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -86,7 +88,7 @@ export default function AccessibleModal({
     >
       <div
         ref={modalRef}
-        className="bg-white rounded-3xl border border-gray-200 shadow-2xl max-w-lg w-full p-6 relative overflow-hidden animate-slide-up text-left"
+        className={`bg-white rounded-3xl border border-gray-200 shadow-2xl ${maxWidth} w-full p-6 relative overflow-hidden animate-slide-up text-left`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-heading"

@@ -3,6 +3,7 @@ import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
 import CreateJob from './pages/CreateJob';
 import JobDetails from './pages/JobDetails';
 import SearchResults from './pages/SearchResults';
@@ -24,6 +25,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/dang-tin" element={<CreateJob />} />
             <Route path="/jobs" element={<SearchResults />} />
             <Route path="/jobs/:id" element={<JobDetails />} />

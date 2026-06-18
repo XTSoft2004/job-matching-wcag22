@@ -19,8 +19,10 @@ import {
   Trash2,
   Edit,
   ExternalLink,
-  X
+  X,
+  Eye
 } from 'lucide-react';
+import AccessibleModal from '../components/ui/AccessibleModal';
 
 interface CandidateProfileData {
   id: number;
@@ -43,6 +45,8 @@ export default function Profile() {
   // Base User State (Name & Phone)
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   
   // Candidate Profile State
   const [candidateProfile, setCandidateProfile] = useState<CandidateProfileData | null>(null);
@@ -80,6 +84,10 @@ export default function Profile() {
   const [cvDescription, setCvDescription] = useState('');
   const [editingCvId, setEditingCvId] = useState<number | null>(null);
   const [editingDesc, setEditingDesc] = useState('');
+
+  // CV Preview States
+  const [previewCvUrl, setPreviewCvUrl] = useState<string | null>(null);
+  const [previewCvTitle, setPreviewCvTitle] = useState<string>('');
 
   const loadCvs = async (profileId: number) => {
     setLoadingCvs(true);
@@ -185,6 +193,7 @@ export default function Profile() {
     // Load base user info
     setFullName(user.fullName || '');
     setPhone(user.phone || '');
+    setAvatarUrl(user.avatarUrl || user.avatar || '');
 
     const loadData = async () => {
       setLoading(true);
@@ -235,6 +244,33 @@ export default function Profile() {
     loadData();
   }, [user]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      setErrorMsg('Tệp tin ảnh đại diện vượt quá dung lượng tối đa cho phép (15MB).');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const { uploadAvatarToSupabase } = await import('../services/supabase');
+      const publicUrl = await uploadAvatarToSupabase(file);
+      setAvatarUrl(publicUrl);
+      setSuccessMsg('Tải lên ảnh đại diện thành công! Vui lòng nhấn lưu hoặc cập nhật tài khoản để lưu thay đổi.');
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || 'Có lỗi xảy ra khi tải ảnh đại diện lên Supabase.');
+    } finally {
+      setUploadingAvatar(false);
+      e.target.value = '';
+    }
+  };
+
   // Handle Account Update (Base User)
   const handleAccountUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,6 +285,7 @@ export default function Profile() {
       await api.patch(`/users/${user.id}`, {
         fullName,
         phone: phone || null,
+        avatarUrl: avatarUrl || null,
       });
 
       await refreshUser();
@@ -275,6 +312,7 @@ export default function Profile() {
       await api.patch(`/users/${user.id}`, {
         fullName,
         phone: phone || null,
+        avatarUrl: avatarUrl || null,
       });
 
       // 2. Update Candidate Profile Details
@@ -320,6 +358,7 @@ export default function Profile() {
       await api.patch(`/users/${user.id}`, {
         fullName,
         phone: phone || null,
+        avatarUrl: avatarUrl || null,
       });
 
       if (user.companyId) {
@@ -374,8 +413,14 @@ export default function Profile() {
         
         <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 justify-between">
           <div className="flex items-center gap-5 flex-col sm:flex-row text-center sm:text-left">
-            <div className="h-20 w-20 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-4xl font-extrabold text-white shadow-inner">
-              {user.fullName ? user.fullName.charAt(0).toUpperCase() : <User />}
+            <div className="h-20 w-20 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center overflow-hidden shadow-inner shrink-0">
+              {user.avatarUrl || user.avatar ? (
+                <img src={user.avatarUrl || user.avatar} alt="Ảnh đại diện" className="h-full w-full object-cover" />
+              ) : user.fullName ? (
+                <span className="text-4xl font-extrabold text-white">{user.fullName.charAt(0).toUpperCase()}</span>
+              ) : (
+                <User className="w-10 h-10 text-white" />
+              )}
             </div>
             <div>
               <div className="flex flex-col sm:flex-row items-center gap-2.5">
@@ -643,16 +688,18 @@ export default function Profile() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end border-t border-gray-100 sm:border-t-0 pt-3 sm:pt-0">
-                          {/* View Link */}
-                          <a
-                            href={cv.cvUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          {/* View Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPreviewCvUrl(cv.cvUrl);
+                              setPreviewCvTitle(cv.description || 'Xem CV');
+                            }}
                             className="p-2 border border-gray-200 hover:border-primary-500 hover:bg-primary-50 rounded-xl text-gray-600 hover:text-primary-750 transition-all focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-                            title="Xem chi tiết CV (mở tab mới)"
+                            title="Xem chi tiết CV"
                           >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
+                            <Eye className="w-4 h-4" />
+                          </button>
 
                           {/* Edit button */}
                           {editingCvId !== cv.id && (
@@ -717,6 +764,63 @@ export default function Profile() {
                     placeholder="0912345678"
                     disabled={submitting}
                   />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label htmlFor="avatarUrlInput" className="label-text">Ảnh đại diện (Avatar URL)</label>
+                  <div className="flex items-center gap-4 mt-1.5">
+                    {/* Clickable circular preview */}
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('avatar-file-input')?.click()}
+                      className="h-14 w-14 rounded-full border border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50 shrink-0 shadow-sm hover:ring-2 hover:ring-primary-500 focus:outline-none relative group"
+                      title="Chọn ảnh đại diện mới để tải lên"
+                      aria-label="Chọn ảnh đại diện mới"
+                      disabled={submitting || uploadingAvatar}
+                    >
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="Xem trước ảnh đại diện" className="h-full w-full object-cover group-hover:opacity-75 transition-opacity" />
+                      ) : (
+                        <User className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                      )}
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[10px] text-white font-bold leading-tight text-center">Tải ảnh</span>
+                      </div>
+                    </button>
+
+                    <input
+                      id="avatar-file-input"
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleAvatarUpload}
+                      disabled={submitting || uploadingAvatar}
+                    />
+
+                    <input
+                      id="avatarUrlInput"
+                      type="url"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      className="input-field flex-1"
+                      placeholder="Ví dụ: https://example.com/avatar.jpg hoặc nhấp tải ảnh lên..."
+                      disabled={submitting || uploadingAvatar}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('avatar-file-input')?.click()}
+                      disabled={submitting || uploadingAvatar}
+                      className="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-xl text-sm hover:bg-gray-50 transition-colors shrink-0 flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
+                    >
+                      {uploadingAvatar ? (
+                        <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Upload className="w-4 h-4 text-gray-500" />
+                      )}
+                      <span>{uploadingAvatar ? 'Đang tải...' : 'Tải lên ảnh'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="sm:col-span-2">
@@ -1121,6 +1225,46 @@ export default function Profile() {
             </form>
           )}
 
+      {/* CV Preview Modal */}
+      {previewCvUrl && (
+        <AccessibleModal
+          isOpen={!!previewCvUrl}
+          onClose={() => setPreviewCvUrl(null)}
+          title={previewCvTitle || 'Xem CV'}
+          maxWidth="max-w-5xl"
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center bg-gray-50 p-3.5 rounded-2xl border border-gray-200">
+              <span className="text-sm text-gray-500 font-medium">Bản xem trước trực tiếp trên hệ thống</span>
+              <a
+                href={previewCvUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary py-1.5 px-3.5 text-xs flex items-center gap-1.5 hover:shadow-md transition-all shrink-0"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Mở trong tab mới</span>
+              </a>
+            </div>
+            
+            <div className="border border-gray-200 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center min-h-[60vh] max-h-[75vh]">
+              {previewCvUrl.split('?')[0].toLowerCase().match(/\.(png|jpg|jpeg|gif|webp)$/) ? (
+                <img
+                  src={previewCvUrl}
+                  alt={previewCvTitle || 'CV Preview'}
+                  className="max-w-full max-h-[70vh] object-contain p-2"
+                />
+              ) : (
+                <iframe
+                  src={`${previewCvUrl}#toolbar=0`}
+                  title="CV Preview"
+                  className="w-full h-[70vh] border-0"
+                />
+              )}
+            </div>
+          </div>
+        </AccessibleModal>
+      )}
         </div>
       </div>
     </div>

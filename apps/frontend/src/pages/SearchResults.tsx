@@ -23,7 +23,10 @@ import {
 interface Job {
   id: number;
   title: string;
-  company: { name: string };
+  company: { 
+    name: string;
+    logo?: string | null;
+  };
   province: string;
   jobType: string;
   salaryMin?: number;
@@ -895,10 +898,14 @@ export default function SearchResults() {
                   >
                     {/* Left portion: logo */}
                     <div 
-                      className="h-14 w-14 rounded-2xl bg-emerald-50 border border-emerald-100/50 flex items-center justify-center text-emerald-700 font-extrabold text-xl shrink-0"
+                      className="h-14 w-14 rounded-2xl bg-emerald-50 border border-emerald-100/50 flex items-center justify-center text-emerald-700 font-extrabold text-xl shrink-0 overflow-hidden"
                       aria-hidden="true"
                     >
-                      {job.company?.name?.charAt(0).toUpperCase() || 'C'}
+                      {job.company?.logo ? (
+                        <img src={job.company.logo} alt="" className="h-full w-full object-contain" />
+                      ) : (
+                        job.company?.name?.charAt(0).toUpperCase() || 'C'
+                      )}
                     </div>
 
                     {/* Middle portion: title, company, quick tags */}

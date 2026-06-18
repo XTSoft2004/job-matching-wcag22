@@ -22,7 +22,10 @@ import {
 interface Job {
   id: number;
   title: string;
-  company: { name: string };
+  company: { 
+    name: string;
+    logo?: string | null;
+  };
   province: string;
   jobType: string;
   salaryMin?: number;
@@ -501,10 +504,14 @@ export default function Home() {
                 >
                   <div className="flex items-start gap-4 mb-4">
                     <div
-                      className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 font-extrabold text-lg flex items-center justify-center shrink-0 border border-emerald-100/50"
+                      className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 font-extrabold text-lg flex items-center justify-center shrink-0 border border-emerald-100/50 overflow-hidden"
                       aria-hidden="true"
                     >
-                      {job.company?.name?.charAt(0).toUpperCase() || 'C'}
+                      {job.company?.logo ? (
+                        <img src={job.company.logo} alt="" className="h-full w-full object-contain" />
+                      ) : (
+                        job.company?.name?.charAt(0).toUpperCase() || 'C'
+                      )}
                     </div>
                     <div className="flex-grow min-w-0">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100 mb-1">
@@ -615,10 +622,14 @@ export default function Home() {
                   >
                     <div className="flex items-start gap-3 mb-4">
                       <div
-                        className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 font-extrabold text-base flex items-center justify-center shrink-0 border border-emerald-100/50"
+                        className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 font-extrabold text-base flex items-center justify-center shrink-0 border border-emerald-100/50 overflow-hidden"
                         aria-hidden="true"
                       >
-                        {job.company?.name?.charAt(0).toUpperCase() || 'C'}
+                        {job.company?.logo ? (
+                          <img src={job.company.logo} alt="" className="h-full w-full object-contain" />
+                        ) : (
+                          job.company?.name?.charAt(0).toUpperCase() || 'C'
+                        )}
                       </div>
                       <div className="flex-grow min-w-0">
                         <h3 id={`attractive-job-title-${job.id}`} className="font-bold text-gray-900 leading-tight hover:text-emerald-700 transition-colors line-clamp-2 pr-6">

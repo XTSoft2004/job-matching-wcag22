@@ -127,8 +127,14 @@ export default function MainLayout() {
                     className="flex items-center gap-2 text-gray-700 hover:text-primary-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg p-1 shrink-0"
                     aria-label={user.role === 'Nhà tuyển dụng' ? 'Xem trang hồ sơ doanh nghiệp' : 'Xem trang hồ sơ cá nhân'}
                   >
-                    <div className="h-9 w-9 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center text-primary-700 font-bold shrink-0">
-                      {user.fullName ? user.fullName.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
+                    <div className="h-9 w-9 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                      {user.avatarUrl || user.avatar ? (
+                        <img src={user.avatarUrl || user.avatar} alt="" className="h-full w-full object-cover rounded-full" />
+                      ) : user.fullName ? (
+                        <span className="text-primary-700 font-bold text-sm">{user.fullName.charAt(0).toUpperCase()}</span>
+                      ) : (
+                        <User className="w-4 h-4 text-primary-700" />
+                      )}
                     </div>
                     <span className="hidden sm:inline font-semibold text-sm max-w-[120px] truncate">
                       {user.fullName}

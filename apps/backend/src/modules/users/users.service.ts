@@ -130,6 +130,7 @@ export class UsersService extends BaseService {
     if (dto.fullName) user.fullName = dto.fullName;
     if (dto.phone) user.phone = dto.phone;
     if (dto.avatarUrl) user.avatarUrl = dto.avatarUrl;
+    if (dto.avatar) user.avatarUrl = dto.avatar;
     if (dto.role) user.role = dto.role;
     if (dto.status) user.status = dto.status;
 

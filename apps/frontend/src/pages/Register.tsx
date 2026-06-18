@@ -47,10 +47,11 @@ export default function Register() {
     setLoading(true);
     try {
       await register(fullName, email, password, phone || undefined, role);
-      // Redirect to login page with state containing success message
-      navigate('/login', { 
+      // Redirect to verification page with state containing email
+      navigate('/verify-email', { 
         state: { 
-          message: 'Tài khoản của bạn đã được đăng ký thành công! Hãy đăng nhập.' 
+          email: email,
+          message: 'Hệ thống đã gửi một mã OTP kích hoạt tài khoản đến địa chỉ email của bạn.' 
         } 
       });
     } catch (err: any) {

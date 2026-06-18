@@ -91,9 +91,17 @@ export default function Login() {
               className="rounded-xl bg-red-50 p-4 border border-red-200 text-red-800 text-sm flex items-start gap-2.5"
             >
               <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
-              <div>
+              <div className="flex-1">
                 <span className="font-semibold block">Lỗi đăng nhập:</span>
                 <span>{error}</span>
+                {error.includes('tạm khóa') && (
+                  <p className="mt-2 text-xs font-bold">
+                    Tài khoản chưa kích hoạt?{' '}
+                    <Link to="/verify-email" state={{ email }} className="text-primary-700 hover:underline">
+                      Kích hoạt tài khoản bằng mã OTP ngay
+                    </Link>
+                  </p>
+                )}
               </div>
             </div>
           )}
