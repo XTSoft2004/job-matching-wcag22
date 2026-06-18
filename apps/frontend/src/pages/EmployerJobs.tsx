@@ -189,19 +189,21 @@ export default function EmployerJobs() {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleToggleStatus(job)}
-                      className={`p-1.5 rounded-lg border transition-colors ${
+                      className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                         job.status === 'active' 
                           ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' 
                           : 'border-green-200 text-green-700 hover:bg-green-50'
                       }`}
                       title={job.status === 'active' ? 'Tạm đóng bài tuyển dụng' : 'Mở tuyển nhận hồ sơ'}
+                      aria-label={job.status === 'active' ? 'Tạm đóng bài tuyển dụng' : 'Mở tuyển nhận hồ sơ'}
                     >
                       <Power className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteJob(job)}
-                      className="p-1.5 rounded-lg border border-red-200 text-red-650 hover:bg-red-50 transition-colors"
+                      className="p-1.5 rounded-lg border border-red-200 text-red-650 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                       title="Xóa bài đăng"
+                      aria-label="Xóa bài đăng"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

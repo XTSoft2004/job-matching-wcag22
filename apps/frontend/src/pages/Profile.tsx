@@ -490,7 +490,7 @@ export default function Profile() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="sm:col-span-2">
-                    <label className="label-text">Chọn tệp tin CV (PDF, DOC, DOCX, Ảnh - Tối đa 5MB)</label>
+                    <label htmlFor="cv-file-input" className="label-text">Chọn tệp tin CV (PDF, DOC, DOCX, Ảnh - Tối đa 5MB)</label>
                     <div className="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-2xl hover:border-primary-500 transition-colors relative bg-gray-50/50">
                       <div className="space-y-2 text-center">
                         <Upload className="mx-auto h-12 w-12 text-gray-400" />

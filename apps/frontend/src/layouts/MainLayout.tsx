@@ -1,10 +1,19 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LogOut, User, PlusCircle, Search } from 'lucide-react';
 
 export default function MainLayout() {
   const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.focus({ preventScroll: true });
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -13,6 +22,13 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50/50">
+      {/* Skip Link */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl z-[100] shadow-md focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+      >
+        Chuyển nhanh đến nội dung chính
+      </a>
       {/* Top green announcement banner */}
       <div className="bg-primary-950 text-primary-100 py-2 px-4 text-center text-xs font-semibold tracking-wide sm:text-sm border-b border-primary-900 shadow-sm relative z-50">
         ✨ Hệ thống tìm kiếm việc làm thông minh AI & Giọng nói hỗ trợ người khiếm thị / khuyết tật đạt tiêu chuẩn WCAG 2.2
@@ -146,7 +162,7 @@ export default function MainLayout() {
       </header>
 
       {/* Main Content Area */}
-      <main id="main-content" className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8" tabIndex={-1}>
+      <main ref={mainRef} id="main-content" className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 outline-none" tabIndex={-1}>
         <Outlet />
       </main>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { notification } from 'antd';
 import api from '../services/api';
@@ -82,6 +82,64 @@ export default function JobDetails() {
   const [newCvDesc, setNewCvDesc] = useState('');
   const [coverLetter, setCoverLetter] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
+
+  // Refs for modal focus management
+  const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isApplyModalOpen) {
+      triggerRef.current = document.activeElement as HTMLElement;
+
+      // Direct focus into modal close button or first interactive element
+      setTimeout(() => {
+        const focusable = modalRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([-1])'
+        );
+        if (focusable && focusable.length > 0) {
+          (focusable[0] as HTMLElement).focus();
+        }
+      }, 50);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setIsApplyModalOpen(false);
+          return;
+        }
+
+        if (e.key === 'Tab') {
+          if (!modalRef.current) return;
+          const elements = modalRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([-1])'
+          );
+          if (elements.length === 0) return;
+
+          const firstEl = elements[0];
+          const lastEl = elements[elements.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstEl) {
+              lastEl.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastEl) {
+              firstEl.focus();
+              e.preventDefault();
+            }
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        if (triggerRef.current) {
+          setTimeout(() => triggerRef.current?.focus(), 0);
+        }
+      };
+    }
+  }, [isApplyModalOpen]);
 
   // Fetch job details
   useEffect(() => {
@@ -513,13 +571,14 @@ export default function JobDetails() {
         <div
           onClick={() => setIsApplyModalOpen(false)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity cursor-pointer"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
         >
           {/* Modal box */}
           <div
+            ref={modalRef}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
             className="bg-white rounded-3xl border border-gray-200 shadow-2xl max-w-lg w-full p-6 relative overflow-hidden animate-slide-up text-left cursor-default"
           >
 
@@ -635,8 +694,10 @@ export default function JobDetails() {
                       </div>
 
                       <div className="space-y-2">
-                        <div className="relative border-2 border-emerald-200 border-dashed hover:border-emerald-500 rounded-2xl p-5 bg-white text-center cursor-pointer transition-all hover:bg-emerald-50/10">
+                        <div className="relative border-2 border-emerald-200 border-dashed hover:border-emerald-500 rounded-2xl p-5 bg-white text-center cursor-pointer transition-all hover:bg-emerald-50/10 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-200">
+                          <label htmlFor="cv-file-upload" className="sr-only">Tải lên tệp CV mới</label>
                           <input
+                            id="cv-file-upload"
                             type="file"
                             accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"

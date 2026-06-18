@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
@@ -43,6 +43,63 @@ export default function AdminUsers() {
   const [editStatus, setEditStatus] = useState('');
   const [updating, setUpdating] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  // Refs for modal focus management
+  const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (editingUser) {
+      triggerRef.current = document.activeElement as HTMLElement;
+
+      setTimeout(() => {
+        const focusable = modalRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([-1])'
+        );
+        if (focusable && focusable.length > 0) {
+          (focusable[0] as HTMLElement).focus();
+        }
+      }, 50);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setEditingUser(null);
+          return;
+        }
+
+        if (e.key === 'Tab') {
+          if (!modalRef.current) return;
+          const elements = modalRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([-1])'
+          );
+          if (elements.length === 0) return;
+
+          const firstEl = elements[0];
+          const lastEl = elements[elements.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstEl) {
+              lastEl.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastEl) {
+              firstEl.focus();
+              e.preventDefault();
+            }
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        if (triggerRef.current) {
+          setTimeout(() => triggerRef.current?.focus(), 0);
+        }
+      };
+    }
+  }, [editingUser]);
 
   const fetchUsers = async (page: number = currentPage, search: string = searchQuery) => {
     setLoading(true);
@@ -253,6 +310,7 @@ export default function AdminUsers() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
+              <caption className="sr-only">Danh sách tài khoản người dùng trên hệ thống</caption>
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
                   <th scope="col" className="px-6 py-4">Tên & Email</th>
@@ -290,14 +348,14 @@ export default function AdminUsers() {
                       <div className="flex justify-center items-center gap-2">
                         <button
                           onClick={() => openEditModal(u)}
-                          className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
+                          className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                           title="Sửa thông tin"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(u)}
-                          className={`p-1.5 rounded-lg border ${u.status === 'Hoạt động' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'} transition-colors`}
+                          className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${u.status === 'Hoạt động' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
                           title={u.status === 'Hoạt động' ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'}
                         >
                           {u.status === 'Hoạt động' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
@@ -305,7 +363,7 @@ export default function AdminUsers() {
                         <button
                           onClick={() => handleDeleteUser(u)}
                           disabled={u.id === user?.id}
-                          className={`p-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors ${u.id === user?.id ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          className={`p-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${u.id === user?.id ? 'opacity-40 cursor-not-allowed' : ''}`}
                           title="Xóa tài khoản"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -325,7 +383,7 @@ export default function AdminUsers() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors ${currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
             >
               <ChevronLeft className="w-4 h-4" /> Trước
             </button>
@@ -333,7 +391,7 @@ export default function AdminUsers() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
             >
               Sau <ChevronRight className="w-4 h-4" />
             </button>
@@ -344,18 +402,28 @@ export default function AdminUsers() {
       {/* Edit User Modal Dialog */}
       {editingUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-xl max-w-md w-full border border-gray-100 overflow-hidden relative animate-slide-up">
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-user-title"
+            className="bg-white rounded-3xl shadow-xl max-w-md w-full border border-gray-100 overflow-hidden relative animate-slide-up"
+          >
             <div className="flex justify-between items-center bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <h3 className="font-extrabold text-gray-900 text-base">Chỉnh Sửa Tài Khoản</h3>
-              <button onClick={() => setEditingUser(null)} className="p-1 rounded hover:bg-gray-200 text-gray-500 transition-colors">
+              <h3 id="edit-user-title" className="font-extrabold text-gray-900 text-base">Chỉnh Sửa Tài Khoản</h3>
+              <button
+                onClick={() => setEditingUser(null)}
+                className="p-1 rounded hover:bg-gray-200 text-gray-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                aria-label="Đóng hộp thoại chỉnh sửa"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
               <div>
-                <label className="label-text">Địa chỉ Email</label>
-                <input type="text" readOnly disabled className="input-field bg-gray-50 text-gray-400 cursor-not-allowed" value={editingUser.email} />
+                <label htmlFor="edit-email" className="label-text">Địa chỉ Email</label>
+                <input id="edit-email" type="text" readOnly disabled className="input-field bg-gray-50 text-gray-400 cursor-not-allowed" value={editingUser.email} />
               </div>
 
               <div>

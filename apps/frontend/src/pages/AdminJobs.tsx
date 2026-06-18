@@ -202,6 +202,7 @@ export default function AdminJobs() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
+              <caption className="sr-only">Danh sách tin tuyển dụng trên hệ thống</caption>
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
                   <th scope="col" className="px-6 py-4">Tin Tuyển Dụng & Doanh Nghiệp</th>
@@ -231,21 +232,21 @@ export default function AdminJobs() {
                       <div className="flex justify-center items-center gap-2">
                         <Link
                           to={`/jobs/${j.id}`}
-                          className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
+                          className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                           title="Xem chi tiết tin đăng"
                         >
                           <Eye className="w-4 h-4" />
                         </Link>
                         <button
                           onClick={() => handleToggleStatus(j)}
-                          className={`p-1.5 rounded-lg border ${j.status === 'active' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'} transition-colors`}
+                          className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${j.status === 'active' ? 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
                           title={j.status === 'active' ? 'Đóng tin tuyển dụng' : 'Mở lại tin tuyển dụng'}
                         >
                           <Power className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteJob(j)}
-                          className="p-1.5 rounded-lg border border-red-200 text-red-650 hover:bg-red-50 transition-colors"
+                          className="p-1.5 rounded-lg border border-red-200 text-red-650 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                           title="Xóa tin đăng"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -265,7 +266,7 @@ export default function AdminJobs() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors ${currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
             >
               <ChevronLeft className="w-4 h-4" /> Trước
             </button>
@@ -273,7 +274,7 @@ export default function AdminJobs() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
             >
               Sau <ChevronRight className="w-4 h-4" />
             </button>

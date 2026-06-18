@@ -386,19 +386,21 @@ export default function Home() {
           </form>
 
           {/* Voice recording progress / errors */}
-          {isRecording && (
-            <div className="flex items-center gap-2 text-red-400 bg-red-950/40 border border-red-900/50 py-2.5 px-4 rounded-xl max-w-md animate-pulse">
-              <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
-              <span className="text-sm font-semibold">Đang lắng nghe... Vui lòng nói từ khóa tìm kiếm.</span>
-            </div>
-          )}
+          <div aria-live="polite" className="space-y-3">
+            {isRecording && (
+              <div className="flex items-center gap-2 text-red-400 bg-red-950/40 border border-red-900/50 py-2.5 px-4 rounded-xl max-w-md animate-pulse">
+                <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+                <span className="text-sm font-semibold">Đang lắng nghe... Vui lòng nói từ khóa tìm kiếm.</span>
+              </div>
+            )}
 
-          {recordingError && (
-            <div className="flex items-center gap-2 text-yellow-300 bg-yellow-950/40 border border-yellow-900/50 py-2.5 px-4 rounded-xl max-w-md">
-              <AlertCircle className="h-5 w-5 text-yellow-400 shrink-0" />
-              <span className="text-sm">{recordingError}</span>
-            </div>
-          )}
+            {recordingError && (
+              <div className="flex items-center gap-2 text-yellow-300 bg-yellow-950/40 border border-yellow-900/50 py-2.5 px-4 rounded-xl max-w-md">
+                <AlertCircle className="h-5 w-5 text-yellow-400 shrink-0" />
+                <span className="text-sm">{recordingError}</span>
+              </div>
+            )}
+          </div>
 
           {/* Suggestions keywords */}
           <div className="flex flex-wrap items-center gap-2 text-sm pt-2">
@@ -436,7 +438,7 @@ export default function Home() {
                 <button
                   key={idx}
                   onClick={() => setCarouselIndex(idx)}
-                  className={`h-2 rounded-full transition-all ${idx === carouselIndex ? 'w-5 bg-emerald-400' : 'w-2 bg-white/40'}`}
+                  className={`h-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${idx === carouselIndex ? 'w-5 bg-emerald-400' : 'w-2 bg-white/40'}`}
                   aria-label={`Slide ${idx + 1}`}
                 />
               ))}
@@ -445,7 +447,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setCarouselIndex((carouselIndex - 1 + slides.length) % slides.length)}
-                className="p-1 rounded bg-white/5 hover:bg-white/10 text-white transition-colors"
+                className="p-1 rounded bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                 aria-label="Slide trước"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -453,7 +455,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setCarouselIndex((carouselIndex + 1) % slides.length)}
-                className="p-1 rounded bg-white/5 hover:bg-white/10 text-white transition-colors"
+                className="p-1 rounded bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                 aria-label="Slide tiếp"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -607,7 +609,7 @@ export default function Home() {
                   type="button"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  className={`p-1.5 rounded-lg border transition-colors ${currentPage === 1 ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${currentPage === 1 ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                   aria-label="Trang trước"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -616,7 +618,7 @@ export default function Home() {
                   type="button"
                   disabled={currentPage === totalAttractivePages}
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalAttractivePages))}
-                  className={`p-1.5 rounded-lg border transition-colors ${currentPage === totalAttractivePages ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  className={`p-1.5 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${currentPage === totalAttractivePages ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                   aria-label="Trang tiếp theo"
                 >
                   <ChevronRight className="h-4 w-4" />

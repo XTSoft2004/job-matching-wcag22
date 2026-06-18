@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
@@ -63,6 +63,63 @@ export default function EmployerApplicants() {
   const [recruiterNote, setRecruiterNote] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Refs for modal focus management
+  const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (selectedApp) {
+      triggerRef.current = document.activeElement as HTMLElement;
+
+      setTimeout(() => {
+        const focusable = modalRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([-1])'
+        );
+        if (focusable && focusable.length > 0) {
+          (focusable[0] as HTMLElement).focus();
+        }
+      }, 50);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setSelectedApp(null);
+          return;
+        }
+
+        if (e.key === 'Tab') {
+          if (!modalRef.current) return;
+          const elements = modalRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([-1])'
+          );
+          if (elements.length === 0) return;
+
+          const firstEl = elements[0];
+          const lastEl = elements[elements.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstEl) {
+              lastEl.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastEl) {
+              firstEl.focus();
+              e.preventDefault();
+            }
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        if (triggerRef.current) {
+          setTimeout(() => triggerRef.current?.focus(), 0);
+        }
+      };
+    }
+  }, [selectedApp]);
 
   const fetchApplications = async (page: number = currentPage, status: string = statusFilter) => {
     if (!user) return;
@@ -204,11 +261,12 @@ export default function EmployerApplicants() {
       {/* Query panel */}
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-gray-500 text-sm font-bold shrink-0">Lọc trạng thái:</span>
+          <label htmlFor="status-filter" className="text-gray-500 text-sm font-bold shrink-0">Lọc trạng thái:</label>
           <select
+            id="status-filter"
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-            className="input-field py-2 text-sm max-w-xs"
+            className="input-field py-2 text-sm max-w-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             <option value="">Tất cả</option>
             <option value="submitted">Đã nộp (Submitted)</option>
@@ -242,6 +300,7 @@ export default function EmployerApplicants() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
+              <caption className="sr-only">Danh sách hồ sơ ứng tuyển của ứng viên</caption>
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
                   <th scope="col" className="px-6 py-4">Ứng Viên</th>
@@ -274,7 +333,7 @@ export default function EmployerApplicants() {
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => openAppDetails(app)}
-                        className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center gap-1 mx-auto font-bold text-xs"
+                        className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center gap-1 mx-auto font-bold text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                       >
                         <Eye className="w-4 h-4" /> Xem hồ sơ
                       </button>
@@ -292,7 +351,7 @@ export default function EmployerApplicants() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors ${currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
             >
               <ChevronLeft className="w-4 h-4" /> Trước
             </button>
@@ -300,7 +359,7 @@ export default function EmployerApplicants() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-150' : 'bg-white hover:bg-gray-50'}`}
             >
               Sau <ChevronRight className="w-4 h-4" />
             </button>
@@ -311,10 +370,16 @@ export default function EmployerApplicants() {
       {/* Profile and Evaluation Details Modal Dialog */}
       {selectedApp && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden relative animate-slide-up max-h-[90vh] flex flex-col text-left">
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="eval-modal-title"
+            className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden relative animate-slide-up max-h-[90vh] flex flex-col text-left"
+          >
             <div className="flex justify-between items-center bg-gray-50 px-6 py-4 border-b border-gray-200 shrink-0">
               <div>
-                <h3 className="font-extrabold text-gray-900 text-base">Đánh Giá Hồ Sơ Ứng Viên</h3>
+                <h3 id="eval-modal-title" className="font-extrabold text-gray-900 text-base">Đánh Giá Hồ Sơ Ứng Viên</h3>
                 <p className="text-gray-500 text-xs mt-0.5">Nộp vào: {selectedApp.job?.title}</p>
               </div>
               <button onClick={() => setSelectedApp(null)} className="p-1 rounded hover:bg-gray-200 text-gray-500 transition-colors">

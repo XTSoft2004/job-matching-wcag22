@@ -192,7 +192,7 @@ export default function CandidateApplied() {
               <div className="shrink-0 flex items-center w-full md:w-auto md:border-l md:border-gray-100 md:pl-6 justify-end gap-3">
                 <button
                   onClick={() => handleWithdraw(app)}
-                  className="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-650 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors w-full md:w-auto justify-center"
+                  className="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-650 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors w-full md:w-auto justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   title="Rút hồ sơ ứng tuyển"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
