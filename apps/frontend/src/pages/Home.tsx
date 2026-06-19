@@ -524,16 +524,16 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full">
             {featuredList.map((job) => {
               const isFav = favorites.includes(job.id);
               return (
                 <article
                   key={job.id}
-                  className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col relative focus-within:ring-2 focus-within:ring-emerald-500"
+                  className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col relative focus-within:ring-2 focus-within:ring-emerald-500 min-w-0 w-full"
                   aria-labelledby={`featured-job-title-${job.id}`}
                 >
-                  <div className="flex items-start gap-4 mb-4">
+                  <div className="flex items-start gap-4 mb-4 min-w-0 w-full">
                     <div
                       className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-700 font-extrabold text-lg flex items-center justify-center shrink-0 border border-emerald-100/50 overflow-hidden"
                       aria-hidden="true"
@@ -553,27 +553,25 @@ export default function Home() {
                           {job.title}
                         </Link>
                       </h3>
-                      <p className="text-gray-500 text-xs font-semibold truncate mt-1">{job.company?.name}</p>
+                      <p className="text-gray-500 text-xs font-semibold truncate mt-1 w-full">{job.company?.name}</p>
                     </div>
                   </div>
 
-                  {/* Badges info */}
-                  <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-gray-50">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      {formatSalary(job)}
+                  <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-gray-50 w-full">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 max-w-full truncate">
+                      <DollarSign className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{formatSalary(job)}</span>
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600">
-                      <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                      {job.province || 'Toàn quốc'}
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 max-w-full truncate">
+                      <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <span className="truncate">{job.province || 'Toàn quốc'}</span>
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600">
-                      <Briefcase className="w-3.5 h-3.5 text-gray-400" />
-                      {job.jobType}
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 max-w-full truncate">
+                      <Briefcase className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <span className="truncate">{job.jobType}</span>
                     </span>
                   </div>
 
-                  {/* Save Heart Button */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -642,16 +640,16 @@ export default function Home() {
               <p className="text-gray-600 text-lg font-bold">Không tìm thấy công việc phù hợp nào khác.</p>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 w-full">
               {attractiveList.map((job) => {
                 const isFav = favorites.includes(job.id);
                 return (
                   <article
                     key={job.id}
-                    className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-emerald-100 transition-all duration-200 flex flex-col relative focus-within:ring-2 focus-within:ring-emerald-500"
+                    className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-emerald-100 transition-all duration-200 flex flex-col relative focus-within:ring-2 focus-within:ring-emerald-500 min-w-0 w-full"
                     aria-labelledby={`attractive-job-title-${job.id}`}
                   >
-                    <div className="flex items-start gap-3 mb-4">
+                    <div className="flex items-start gap-3 mb-4 min-w-0 w-full">
                       <div
                         className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 font-extrabold text-base flex items-center justify-center shrink-0 border border-emerald-100/50 overflow-hidden"
                         aria-hidden="true"
@@ -668,23 +666,21 @@ export default function Home() {
                             {job.title}
                           </Link>
                         </h3>
-                        <p className="text-gray-500 text-xs font-semibold truncate mt-1">{job.company?.name}</p>
+                        <p className="text-gray-500 text-xs font-semibold truncate mt-1 w-full">{job.company?.name}</p>
                       </div>
                     </div>
 
-                    {/* Badges */}
-                    <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-gray-50">
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
-                        <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-                        {formatSalary(job)}
+                    <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-gray-50 w-full">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg max-w-full truncate">
+                        <DollarSign className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span className="truncate">{formatSalary(job)}</span>
                       </span>
-                      <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-lg">
-                        <MapPin className="w-3 h-3 text-gray-400" />
-                        {job.province || 'Toàn quốc'}
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-lg max-w-full truncate">
+                        <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
+                        <span className="truncate">{job.province || 'Toàn quốc'}</span>
                       </span>
                     </div>
 
-                    {/* Favorite Heart Button */}
                     <button
                       type="button"
                       onClick={(e) => {
