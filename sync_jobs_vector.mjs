@@ -1,8 +1,11 @@
 async function syncJobsToVectorDB() {
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000/api/v1';
+  const aiToolsUrl = process.env.AI_TOOLS_URL || 'http://127.0.0.1:8000/api/v1';
+
   console.log('Logging in to get token...');
   let token = '';
   try {
-    const loginResponse = await fetch('http://localhost:3000/api/v1/auth/login', {
+    const loginResponse = await fetch(`${backendUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'admin@jobmatching.com', password: 'Admin123@' })
@@ -21,7 +24,7 @@ async function syncJobsToVectorDB() {
   console.log('Fetching existing jobs from normal DB...');
   let jobs = [];
   try {
-    const res = await fetch('http://localhost:3000/api/v1/jobs?limit=1000', {
+    const res = await fetch(`${backendUrl}/jobs?limit=1000`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
@@ -41,7 +44,7 @@ async function syncJobsToVectorDB() {
   for (const job of jobs) {
     console.log(`Syncing job: "${job.title}" (ID: ${job.id})...`);
     try {
-      const embedRes = await fetch('http://127.0.0.1:8000/api/v1/jobs/embed', {
+      const embedRes = await fetch(`${aiToolsUrl}/jobs/embed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

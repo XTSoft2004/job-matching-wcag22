@@ -94,7 +94,8 @@ export class JobsService extends BaseService {
           companyName: savedJob.company?.name || null
         };
 
-        fetch('http://127.0.0.1:8000/api/v1/jobs/embed', {
+        const aiToolsUrl = process.env.AI_TOOLS_URL || 'http://localhost:8000/api/v1';
+        fetch(`${aiToolsUrl}/jobs/embed`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -77,10 +77,12 @@ const jobs = [
 ];
 
 async function seedJobs() {
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000/api/v1';
+
   console.log('Logging in to get token...');
   let token = '';
   try {
-    const loginResponse = await fetch('http://localhost:3000/api/v1/auth/login', {
+    const loginResponse = await fetch(`${backendUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'admin@jobmatching.com', password: 'Admin123@' })
@@ -99,7 +101,7 @@ async function seedJobs() {
   console.log('Fetching user profile...');
   let adminUserId = 1;
   try {
-    const profileRes = await fetch('http://localhost:3000/api/v1/auth/me', {
+    const profileRes = await fetch(`${backendUrl}/auth/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (profileRes.ok) {
@@ -114,7 +116,7 @@ async function seedJobs() {
   console.log('Fetching or creating companies...');
   let companies = [];
   try {
-    let companiesRes = await fetch('http://localhost:3000/api/v1/companies', {
+    let companiesRes = await fetch(`${backendUrl}/companies`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     let companiesData = await companiesRes.json();
@@ -125,7 +127,7 @@ async function seedJobs() {
     
     for (const name of companyNames) {
       if (!companies.find(c => c.name === name)) {
-        const createRes = await fetch('http://localhost:3000/api/v1/companies', {
+        const createRes = await fetch(`${backendUrl}/companies`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -153,7 +155,7 @@ async function seedJobs() {
       console.log('⏳ Đợi 2 giây để CSDL cập nhật...');
       await new Promise(resolve => setTimeout(resolve, 2000));
       // Fetch again to get the new IDs
-      companiesRes = await fetch('http://localhost:3000/api/v1/companies', {
+      companiesRes = await fetch(`${backendUrl}/companies`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       companiesData = await companiesRes.json();
@@ -168,7 +170,7 @@ async function seedJobs() {
   console.log('Fetching existing jobs...');
   let existingJobs = [];
   try {
-    const jobsRes = await fetch('http://localhost:3000/api/v1/jobs?limit=1000', {
+    const jobsRes = await fetch(`${backendUrl}/jobs?limit=1000`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const jobsData = await jobsRes.json();
@@ -195,7 +197,7 @@ async function seedJobs() {
     delete payload.companyName;
 
     try {
-      const response = await fetch('http://localhost:3000/api/v1/jobs', {
+      const response = await fetch(`${backendUrl}/jobs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

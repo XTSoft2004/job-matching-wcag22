@@ -188,7 +188,8 @@ export default function SearchResults() {
         try {
           // Attempt AI Vector Search first
           console.log('Attempting AI Vector Search for:', query);
-          const vectorRes = await axios.post('http://127.0.0.1:8000/api/v1/jobs/search', {
+          const aiToolsUrl = import.meta.env.VITE_AI_TOOLS_URL || 'http://127.0.0.1:8000/api/v1';
+          const vectorRes = await axios.post(`${aiToolsUrl}/jobs/search`, {
             query_text: query
           });
           const vectorData = vectorRes.data?.data || [];

@@ -102,7 +102,8 @@ export default function MainLayout() {
       }
 
       const chunkText = chunks[currentChunkIndex];
-      const url = `http://localhost:3000/api/v1/tts?q=${encodeURIComponent(chunkText)}`;
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+      const url = `${apiBaseUrl}/tts?q=${encodeURIComponent(chunkText)}`;
       const audio = new Audio();
       (audio as any).referrerPolicy = 'no-referrer';
       audio.src = url;
