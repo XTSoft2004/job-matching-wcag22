@@ -640,7 +640,7 @@ export default function MainLayout() {
     };
   }, [webReaderEnabled, webReaderMode, webReaderRate]);
 
-  // Close mobile menu on Escape
+  // Close mobile menu on Escape or click outside
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && mobileMenuOpen) {
@@ -648,8 +648,23 @@ export default function MainLayout() {
         menuButtonRef.current?.focus();
       }
     };
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        mobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(e.target as Node)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [mobileMenuOpen]);
 
   const handleLogout = () => {
@@ -664,7 +679,7 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50/50">
+    <div className="min-h-screen flex flex-col bg-gray-50/50 overflow-x-hidden">
       {/* Skip Link */}
       <a
         href="#main-content"
@@ -672,17 +687,17 @@ export default function MainLayout() {
       >
         Chuyển nhanh đến nội dung chính
       </a>
-      {/* Top green announcement banner - role="complementary" vì thông tin bổ sung */}
-      <div
-        className="bg-primary-950 text-primary-100 py-2 px-4 text-center text-xs font-semibold tracking-wide sm:text-sm border-b border-primary-900 shadow-sm relative z-50"
-        role="complementary"
-        aria-label="Thông báo tiếp cận"
-      >
-        ✨ Hệ thống tìm kiếm việc làm thông minh AI &amp; Giọng nói hỗ trợ người khiếm thị / khuyết tật đạt tiêu chuẩn WCAG 2.2
-      </div>
+      {/* Accessible Navigation Header - Fixed at top for reliable mobile stickiness */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        {/* Top green announcement banner - role="complementary" vì thông tin bổ sung */}
+        <div
+          className="bg-primary-950 text-primary-100 py-2 px-4 text-center text-xs font-semibold tracking-wide sm:text-sm border-b border-primary-900 shadow-sm relative z-50"
+          role="complementary"
+          aria-label="Thông báo tiếp cận"
+        >
+          ✨ Hệ thống tìm kiếm việc làm thông minh AI &amp; Giọng nói hỗ trợ người khiếm thị / khuyết tật đạt tiêu chuẩn WCAG 2.2
+        </div>
 
-      {/* Accessible Navigation Banner */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex-shrink-0 flex items-center">
@@ -770,24 +785,12 @@ export default function MainLayout() {
               )}
             </nav>
 
-            {/* Mobile hamburger button */}
-            <button
-              ref={menuButtonRef}
-              type="button"
-              className="md:hidden p-2 rounded-lg text-gray-600 hover:text-primary-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-colors"
-              aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-menu"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
-            </button>
-
-            <div className="flex items-center space-x-4">
+            {/* Right Group: User actions (desktop) and mobile hamburger button */}
+            <div className="flex items-center gap-2 sm:gap-4">
               {loading ? (
-                <div className="h-8 w-20 bg-gray-200 animate-pulse rounded-lg"></div>
+                <div className="h-8 w-8 bg-gray-200 animate-pulse rounded-full"></div>
               ) : user ? (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4">
                   {/* User Profile Link */}
                   <Link
                     to="/profile"
@@ -808,18 +811,19 @@ export default function MainLayout() {
                     </span>
                   </Link>
 
-                  {/* Log Out Button */}
+                  {/* Log Out Button - hidden on mobile, shown on sm+ */}
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-1.5 text-gray-500 hover:text-red-600 font-medium text-sm py-2 px-3 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    className="hidden sm:flex items-center gap-1.5 text-gray-500 hover:text-red-600 font-medium text-sm py-2 px-3 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     aria-label="Đăng xuất khỏi hệ thống"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span className="hidden sm:inline">Đăng xuất</span>
+                    <span>Đăng xuất</span>
                   </button>
                 </div>
               ) : (
-                <>
+                /* Login / Register - hidden on mobile, shown on sm+ */
+                <div className="hidden sm:flex items-center gap-2">
                   <Link
                     to="/login"
                     className="text-gray-600 hover:text-gray-900 font-semibold px-4 py-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
@@ -829,19 +833,32 @@ export default function MainLayout() {
                   <Link to="/register" className="btn-primary">
                     Đăng ký
                   </Link>
-                </>
+                </div>
               )}
+
+              {/* Mobile hamburger button */}
+              <button
+                ref={menuButtonRef}
+                type="button"
+                className="md:hidden p-2 rounded-lg text-gray-600 hover:text-primary-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-colors"
+                aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile Navigation Menu - Fixed overlay below header, always visible at any scroll position */}
       {mobileMenuOpen && (
         <div
           ref={mobileMenuRef}
           id="mobile-menu"
-          className="md:hidden bg-white border-b border-gray-200 shadow-lg z-40"
+          className="md:hidden fixed top-[108px] sm:top-[100px] left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-xl max-h-[calc(100vh-108px)] overflow-y-auto"
           role="navigation"
           aria-label="Menu điều hướng di động"
         >
@@ -850,6 +867,7 @@ export default function MainLayout() {
               to="/"
               className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`}
               aria-current={isActive('/') ? 'page' : undefined}
+              onClick={() => setMobileMenuOpen(false)}
             >
               <Search className="w-4 h-4" aria-hidden="true" />
               Tìm việc làm
@@ -857,33 +875,57 @@ export default function MainLayout() {
 
             {user?.role === 'Nhà tuyển dụng' && (
               <>
-                <Link to="/employer/jobs" className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/employer/jobs') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/employer/jobs') ? 'page' : undefined}>Tin đã đăng</Link>
-                <Link to="/employer/applicants" className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/employer/applicants') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/employer/applicants') ? 'page' : undefined}>Quản lý ứng viên</Link>
-                <Link to="/dang-tin" className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/dang-tin') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/dang-tin') ? 'page' : undefined}><PlusCircle className="w-4 h-4" aria-hidden="true" />Đăng tin</Link>
+                <Link to="/employer/jobs" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/employer/jobs') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/employer/jobs') ? 'page' : undefined}>Tin đã đăng</Link>
+                <Link to="/employer/applicants" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/employer/applicants') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/employer/applicants') ? 'page' : undefined}>Quản lý ứng viên</Link>
+                <Link to="/dang-tin" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/dang-tin') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/dang-tin') ? 'page' : undefined}><PlusCircle className="w-4 h-4" aria-hidden="true" />Đăng tin</Link>
               </>
             )}
             {user?.role === 'Ứng viên' && (
-              <Link to="/candidate/applied" className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/candidate/applied') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/candidate/applied') ? 'page' : undefined}>Việc làm đã nộp</Link>
+              <Link to="/candidate/applied" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/candidate/applied') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/candidate/applied') ? 'page' : undefined}>Việc làm đã nộp</Link>
             )}
             {user?.role === 'Quản trị viên' && (
               <>
-                <Link to="/admin/dashboard" className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/admin/dashboard') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/admin/dashboard') ? 'page' : undefined}>Thống kê</Link>
-                <Link to="/admin/users" className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/admin/users') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/admin/users') ? 'page' : undefined}>Quản lý User</Link>
-                <Link to="/admin/jobs" className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/admin/jobs') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/admin/jobs') ? 'page' : undefined}>Quản lý Job</Link>
+                <Link to="/admin/dashboard" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/admin/dashboard') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/admin/dashboard') ? 'page' : undefined}>Thống kê</Link>
+                <Link to="/admin/users" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/admin/users') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/admin/users') ? 'page' : undefined}>Quản lý User</Link>
+                <Link to="/admin/jobs" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/admin/jobs') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`} aria-current={isActive('/admin/jobs') ? 'page' : undefined}>Quản lý Job</Link>
               </>
             )}
             {!user && (
               <div className="flex gap-2 pt-2 border-t border-gray-100">
-                <Link to="/login" className="flex-1 text-center px-4 py-2 rounded-lg font-semibold text-gray-600 hover:bg-gray-50 border border-gray-200 transition-colors">Đăng nhập</Link>
-                <Link to="/register" className="flex-1 btn-primary text-center">Đăng ký</Link>
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="flex-1 text-center px-4 py-2 rounded-lg font-semibold text-gray-600 hover:bg-gray-50 border border-gray-200 transition-colors">Đăng nhập</Link>
+                <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="flex-1 btn-primary text-center">Đăng ký</Link>
+              </div>
+            )}
+
+            {user && (
+              <div className="pt-2 mt-2 border-t border-gray-100 space-y-1">
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold transition-colors ${isActive('/profile') ? 'text-primary-700 bg-primary-50' : 'text-gray-700 hover:bg-gray-50'}`}
+                >
+                  <User className="w-4 h-4 text-gray-550" aria-hidden="true" />
+                  Hồ sơ cá nhân
+                </Link>
+                <button
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold text-red-600 hover:bg-red-50 transition-colors text-left"
+                >
+                  <LogOut className="w-4 h-4 text-red-500" aria-hidden="true" />
+                  Đăng xuất
+                </button>
               </div>
             )}
           </div>
         </div>
       )}
 
+      {/* Spacer to push content below the fixed header */}
+      <div className="h-[108px] sm:h-[100px] shrink-0" aria-hidden="true" />
+
       {/* Main Content Area */}
       <main ref={mainRef} id="main-content" className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 outline-none" tabIndex={-1}>
+
         <Outlet />
       </main>
 
@@ -945,7 +987,7 @@ export default function MainLayout() {
 
           <div className="pt-8 border-t border-gray-800 text-center flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
             <p>© {new Date().getFullYear()} JobAccess. Tất cả các quyền được bảo lưu.</p>
-            <p className="flex items-center gap-2">
+            <p className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
               <span>Thiết kế theo tiêu chuẩn tiếp cận</span>
               <span className="px-2 py-0.5 bg-primary-950 text-primary-400 border border-primary-800 rounded text-xs font-semibold">WCAG 2.2 AA</span>
             </p>
@@ -982,7 +1024,7 @@ export default function MainLayout() {
       {/* Floating Accessibility settings panel */}
       {showAccessibilityPanel && (
         <div
-          className="fixed bottom-40 right-6 z-50 w-80 bg-white border border-gray-200 rounded-3xl p-5 shadow-2xl animate-fadeIn font-sans"
+          className="fixed bottom-40 right-4 left-4 sm:left-auto sm:right-6 sm:w-80 z-50 bg-white border border-gray-200 rounded-3xl p-5 shadow-2xl animate-fadeIn font-sans"
           role="region"
           aria-label="Bảng cài đặt Trợ năng đọc màn hình"
         >

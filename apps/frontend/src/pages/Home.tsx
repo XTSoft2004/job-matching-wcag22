@@ -295,7 +295,7 @@ export default function Home() {
   return (
     <div className="space-y-16 animate-fade-in text-gray-800 font-sans">
       {/* 1. HERO BANNER & SEARCH CONTAINER */}
-      <section className="bg-gradient-to-br from-green-950 via-emerald-900 to-green-900 text-white rounded-3xl p-8 sm:p-12 shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-center gap-8 border border-emerald-800/40">
+      <section className="bg-gradient-to-br from-green-950 via-emerald-900 to-green-900 text-white rounded-3xl p-5 sm:p-10 md:p-12 shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-center gap-8 border border-emerald-800/40">
 
         {/* Left Search Info Box */}
         <div className="flex-1 w-full space-y-6 relative z-10">
@@ -387,7 +387,7 @@ export default function Home() {
 
         {/* Right Slideshow Promo Box - WCAG Carousel */}
         <div
-          className="w-full lg:w-80 shrink-0 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-64 relative z-10 text-left"
+          className="w-full lg:w-80 shrink-0 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 flex flex-col justify-between min-h-[16rem] lg:h-64 relative z-10 text-left"
           role="region"
           aria-roledescription="carousel"
           aria-label="Giới thiệu tính năng"
@@ -494,7 +494,7 @@ export default function Home() {
                 aria-selected={activeTab === tab}
                 aria-controls={`tab-panel-featured`}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${activeTab === tab
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-sm font-bold border transition-all ${activeTab === tab
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm'
                   : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                   } focus:outline-none focus:ring-2 focus:ring-emerald-500`}
@@ -775,7 +775,7 @@ export default function Home() {
       </div>
 
       {/* 6. HOTLINE & ASSISTANCE SECTION */}
-      <section className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 border-l-4 border-l-emerald-600 text-left">
+      <section className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 border-l-4 border-l-emerald-600 text-left">
         <div className="space-y-3">
           <h3 className="text-xl font-black text-gray-900">Tìm việc khó đã có JobAccess đồng hành!</h3>
           <p className="text-gray-500 text-sm leading-relaxed max-w-2xl">
@@ -783,7 +783,7 @@ export default function Home() {
           </p>
           <div className="text-sm font-semibold text-gray-600 flex flex-wrap gap-x-6 gap-y-2">
             <span className="flex items-center gap-1">
-              <Mail className="h-4 w-4 text-emerald-600" />
+              <Mail className="h-4 w-4 text-emerald-600 animate-pulse" />
               <span>Email hỗ trợ: <a href="mailto:hotro@jobmatch.vn" className="text-emerald-700 hover:underline">hotro@jobmatch.vn</a></span>
             </span>
             <span className="flex items-center gap-1">
@@ -795,7 +795,7 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-4 shrink-0 w-full md:w-auto">
           <a
             href="tel:1900068889"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl transition-colors text-center text-base focus:outline-none focus:ring-4 focus:ring-emerald-200 flex items-center justify-center gap-2"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 sm:px-8 rounded-xl transition-colors text-center text-base focus:outline-none focus:ring-4 focus:ring-emerald-200 flex items-center justify-center gap-2"
           >
             <Phone className="h-5 w-5" />
             <span>GỌI HỖ TRỢ: 1900 xxx xxx</span>

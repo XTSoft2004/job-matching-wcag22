@@ -64,7 +64,7 @@ export default function Login() {
       <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-primary-200/40 blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-blue-200/40 blur-3xl pointer-events-none"></div>
 
-      <div className="max-w-md w-full space-y-8 bg-white/70 backdrop-blur-md p-8 rounded-3xl border border-white/80 shadow-xl relative z-10 animate-slide-up">
+      <div className="max-w-md w-full space-y-8 bg-white/70 backdrop-blur-md p-5 sm:p-8 rounded-3xl border border-white/80 shadow-xl relative z-10 animate-slide-up">
         <div>
           <div className="mx-auto h-12 w-12 rounded-2xl bg-primary-700 flex items-center justify-center text-white shadow-lg shadow-primary-200">
             <LogIn className="h-6 w-6" aria-hidden="true" />

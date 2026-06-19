@@ -644,35 +644,36 @@ export default function EmployerApplicants() {
             </div>
 
             {/* Actions for Status updates */}
-            <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex flex-wrap gap-2 justify-between items-center shrink-0">
+            <div className="bg-gray-50 border-t border-gray-200 px-4 sm:px-6 py-4 flex flex-col sm:flex-row flex-wrap gap-2 justify-between items-stretch sm:items-center shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Trạng thái:</span>
                 {getStatusBadge(selectedApp.status)}
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => handleUpdateApplication('reviewing')}
                   disabled={updatingStatus}
-                  className="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 font-bold text-xs py-2 px-4 rounded-lg border border-yellow-200 flex items-center gap-1 transition-colors"
+                  className="flex-1 sm:flex-none bg-yellow-50 hover:bg-yellow-100 text-yellow-800 font-bold text-xs py-2 px-3 rounded-lg border border-yellow-200 flex items-center justify-center gap-1 transition-colors"
                 >
                   <Clock className="w-4 h-4" /> Đang duyệt
                 </button>
                 <button
                   onClick={() => handleUpdateApplication('rejected')}
                   disabled={updatingStatus}
-                  className="bg-red-50 hover:bg-red-100 text-red-800 font-bold text-xs py-2 px-4 rounded-lg border border-red-200 flex items-center gap-1 transition-colors"
+                  className="flex-1 sm:flex-none bg-red-50 hover:bg-red-100 text-red-800 font-bold text-xs py-2 px-3 rounded-lg border border-red-200 flex items-center justify-center gap-1 transition-colors"
                 >
                   <XCircle className="w-4 h-4" /> Từ chối
                 </button>
                 <button
                   onClick={() => handleUpdateApplication('approved')}
                   disabled={updatingStatus}
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-2 px-4 rounded-lg flex items-center gap-1 shadow-sm transition-colors"
+                  className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 shadow-sm transition-colors"
                 >
-                  <CheckCircle className="w-4 h-4" /> Gửi lời mời phỏng vấn
+                  <CheckCircle className="w-4 h-4" /> <span>Mời phỏng vấn</span>
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       )}

@@ -614,7 +614,7 @@ export default function SearchResults() {
     <div className="space-y-8 animate-fade-in text-gray-800 font-sans max-w-7xl mx-auto">
       {/* 1. GREEN HEADER SEARCH BAR */}
       <section 
-        className="bg-gradient-to-r from-emerald-800 to-green-950 p-6 rounded-3xl shadow-lg border border-emerald-700/30 text-white relative overflow-hidden"
+        className="bg-gradient-to-r from-emerald-800 to-green-950 p-4 sm:p-6 rounded-3xl shadow-lg border border-emerald-700/30 text-white relative overflow-hidden"
         aria-label="Khung tìm kiếm"
       >
         <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 relative z-10">
@@ -786,9 +786,9 @@ export default function SearchResults() {
               </div>
               
               {/* Radio Group: Tên việc làm / Tên công ty / Cả hai - WCAG radiogroup pattern */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <span id="match-type-label" className="text-xs text-gray-500 font-bold">Tìm theo:</span>
-                <div className="flex gap-2" role="radiogroup" aria-labelledby="match-type-label">
+                <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="match-type-label">
                   {[
                     { key: 'both', label: 'Cả hai' },
                     { key: 'title', label: 'Tên việc làm' },
@@ -1067,7 +1067,7 @@ export default function SearchResults() {
 
       {/* 3. PREMIUM FOOTER SEO SECTION */}
       <section 
-        className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-left space-y-6"
+        className="bg-white rounded-3xl p-5 sm:p-8 border border-gray-100 shadow-sm text-left space-y-6"
         aria-labelledby="seo-info-heading"
       >
         <h2 id="seo-info-heading" className="text-lg font-black text-gray-900 border-b border-gray-150 pb-3 flex items-center gap-2">

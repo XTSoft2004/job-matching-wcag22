@@ -73,7 +73,7 @@ export default function Register() {
       <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-primary-200/40 blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-blue-200/40 blur-3xl pointer-events-none"></div>
 
-      <div className="max-w-md w-full space-y-8 bg-white/70 backdrop-blur-md p-8 rounded-3xl border border-white/80 shadow-xl relative z-10 animate-slide-up">
+      <div className="max-w-md w-full space-y-8 bg-white/70 backdrop-blur-md p-5 sm:p-8 rounded-3xl border border-white/80 shadow-xl relative z-10 animate-slide-up">
         <div>
           <div className="mx-auto h-12 w-12 rounded-2xl bg-primary-700 flex items-center justify-center text-white shadow-lg shadow-primary-200">
             <UserPlus className="h-6 w-6" aria-hidden="true" />
@@ -216,7 +216,7 @@ export default function Register() {
 
             <fieldset className="border-0 p-0 m-0">
               <legend className="label-text block mb-2 font-semibold text-gray-700">Vai trò đăng ký</legend>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all focus-within:ring-2 focus-within:ring-primary-500 ${role === 'Ứng viên' ? 'border-primary-600 bg-primary-50/50 text-primary-900' : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'}`}>
                   <input
                     type="radio"
