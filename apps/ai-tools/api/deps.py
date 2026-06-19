@@ -1,9 +1,9 @@
 from typing import Generator
 from services.base import BaseSTTService, BaseVectorService
-from services.stt_service import FasterWhisperSTTService
+from services.stt_service import OpenRouterSTTService
 from services.vector_service import PineconeVectorService
 
-stt_service_instance = FasterWhisperSTTService()
+stt_service_instance = OpenRouterSTTService()
 vector_service_instance = PineconeVectorService()
 
 def get_stt_service() -> Generator[BaseSTTService, None, None]:
