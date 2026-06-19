@@ -35,10 +35,8 @@ echo "[+] Upgrading pip and installing requirements..."
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -r requirements.txt
 
-# Run migrations/seeds if needed
+# Go back to root directory
 cd ../..
-echo "[+] Seeding backend database..."
-pnpm seed:backend || echo "[!] Database seed failed or already seeded, skipping."
 
 # 4. Launch PM2
 echo "[+] Starting all services using PM2..."
