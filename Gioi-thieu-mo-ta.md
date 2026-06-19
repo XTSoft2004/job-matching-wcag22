@@ -76,7 +76,23 @@ Nhóm chúng em đã hiện thực hóa các tiêu chuẩn kỹ thuật nghiêm 
 
 ---
 
-## 5. KẾT LUẬN & HƯỚNG PHÁT TRIỂN
+## 5. TÀI KHOẢN TRẢI NGHIỆM HỆ THỐNG
+
+Để thuận tiện cho việc chạy thử nghiệm và đánh giá đầy đủ các luồng chức năng phân quyền trên hệ thống **JobAccess**, chúng em đã cấu hình sẵn các tài khoản demo sau đây:
+
+*   **Tài khoản Ứng viên (Candidate) - Trải nghiệm tìm việc, viết CV và ứng tuyển:**
+    *   **Email:** `candidate@jobmatching.com`
+    *   **Mật khẩu:** `Candidate123@`
+*   **Tài khoản Nhà tuyển dụng (Employer) - Trải nghiệm đăng tin tuyển dụng, quản lý tin và duyệt ứng viên:**
+    *   **Email:** `employer@jobmatching.com`
+    *   **Mật khẩu:** `Employer123@`
+*   **Tài khoản Quản trị viên (Admin) - Trải nghiệm quản trị hệ thống, xem thống kê và quản lý người dùng:**
+    *   **Email:** `admin@jobmatching.com`
+    *   **Mật khẩu:** `Admin123@`
+
+---
+
+## 6. KẾT LUẬN & HƯỚNG PHÁT TRIỂN
 
 Dự án **JobAccess** là minh chứng rõ nét cho việc ứng dụng công nghệ để tạo dựng một thế giới số phẳng và bình đẳng. Bằng việc tuân thủ chặt chẽ tiêu chuẩn **WCAG 2.2 AA**, sản phẩm không chỉ mang lại giá trị sử dụng to lớn cho cộng đồng người khuyết tật, khiếm thị tại Việt Nam mà còn là một báo cáo kỹ thuật hoàn chỉnh cho thấy khả năng lập trình trợ năng chuyên nghiệp của sinh viên.
 
